@@ -214,7 +214,7 @@
           let timer;
 
 
-          let resendCooldown = 60 * 5; // 60 seconds cooldown
+          let resendCooldown = 30 * 5; // 30 seconds cooldown
 
           function startResendTimer() {
               resendTimer.innerText = `يمكنك إعادة الإرسال بعد ${resendCooldown} ثانية`;
@@ -298,7 +298,7 @@
                       if (data.status) {
                           toastr.success("تم إرسال الرمز مجددًا");
                           document.getElementById('sendOtpButton').disabled = true;
-                          resendCooldown = 60;
+                          resendCooldown = 30;
                           startResendTimer();
                       } else {
                           toastr.error(data.message || "فشل إرسال الرمز");
@@ -351,7 +351,7 @@
                           loginModal.hide();
                           otpModal.show();
                           document.getElementById('sendOtpButton').disabled = true;
-                          resendCooldown = 60;
+                          resendCooldown = 30;
                           startResendTimer();
                           toastr.success(data.message || 'تم إرسال رمز التحقق');
                       } else {

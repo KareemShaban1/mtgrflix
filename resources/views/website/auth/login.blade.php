@@ -142,7 +142,7 @@
                         </button>
     
                         <p class="mt-2 text-muted">
-                            <span id="resendTimer">{{ __('auth.resend_in') }} <span id="countdown">60</span> {{ __('auth.seconds') }}</span>
+                            <span id="resendTimer">{{ __('auth.resend_in') }} <span id="countdown">30</span> {{ __('auth.seconds') }}</span>
                         </p>
                     </div>
                 </form>
@@ -333,7 +333,7 @@
         function startCountdown() {
             const resendButton = document.getElementById('resendOtpButton');
             const timerElement = document.getElementById('countdown');
-            let countdown = 60;
+            let countdown = 30;
             
             resendButton.disabled = true;
             document.getElementById('resendTimer').style.display = 'inline';
