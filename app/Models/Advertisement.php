@@ -13,5 +13,7 @@ class Advertisement extends Model
         'text',
         'color',
         'background',
+        'link',
+        'active',
     ];
 }

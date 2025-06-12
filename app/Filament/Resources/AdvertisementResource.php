@@ -39,6 +39,17 @@ class AdvertisementResource extends Resource
                     ->label(__('site.background'))
                     ->required()
                     ->maxLength(255),
+                Forms\Components\TextInput::make('link')
+                    ->label(__('site.link'))
+                    ->nullable()
+                    ->maxLength(255),
+                Forms\Components\Radio::make('active')
+                    ->label(__('site.active'))
+                    ->options([
+                        true => __('site.yes'),
+                        false => __('site.no'),
+                    ])
+                    ->required(),
             ]);
     }
 
@@ -76,8 +87,8 @@ class AdvertisementResource extends Resource
                 ]),
             ])
             ->recordUrl(
-            fn (Advertisement $record): string => static::getUrl('edit', ['record' => $record]),
-        );
+                fn(Advertisement $record): string => static::getUrl('edit', ['record' => $record]),
+            );
     }
 
     public static function getRelations(): array

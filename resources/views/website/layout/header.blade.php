@@ -1,15 +1,22 @@
 <div class="header-wrapper">
+@if ($advertisement->active === 1)
     <!-- top-menu -->
     <div class="top-menu" id="topAdBar" style="background: {{ $advertisement->background }}">
         <div class="container-fluid d-flex align-items-center justify-content-center position-relative">
             <button class="ad-close-btn" id="closeAdBtn">×</button>
             <div class="marquee-wrapper">
                 <div class="marquee-text" dir="auto"> <!-- Add dir="auto" here -->
-                    <span style="color: {{ $advertisement->color }}">{{ $advertisement->text }}</span>
+                  <a href="{{ $advertisement->link }}">
+                    <span style="color: {{ $advertisement->color }}">
+                    {{ $advertisement->text }}
+                
+                </span>
+                  </a>
                 </div>
             </div>
         </div>
     </div>
+    @endif
 </div>
 
 
