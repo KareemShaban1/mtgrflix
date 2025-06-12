@@ -59,7 +59,7 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 
-    <title>@yield('title')</title>
+    <!-- <title>@yield('title')</title> -->
     @yield('css')
     
     <style>

@@ -1,4 +1,5 @@
 <meta name="description" content="{{ $description }}">
+@yield('meta_description')
 <meta name="keywords" content="{{ $keywords }}">
 <meta name="author" content="{{ $author }}">
 <meta name="robots" content="index, follow">
