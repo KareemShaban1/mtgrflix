@@ -93,6 +93,7 @@ Route::group(['prefix' => LaravelLocalization::setLocale()], function () {
     Route::get('/products/{tag}/{id?}', [CategoryController::class, 'getByTag'])->name('category.byTag');
 
     Route::get('products/search', [WebsiteController::class, 'index'])->name('development.search');
+    Route::get('search/products', [WebsiteController::class, 'searchProduct'])->name('search.product');
     Route::any('/order/checkout', [OrderController::class, 'handlePayment'])->name('checkout');
 
     Route::middleware('auth')->group(function () {

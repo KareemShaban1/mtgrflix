@@ -147,37 +147,44 @@
       @endif
   </script>
   <script>
-      document.getElementById('search-input').addEventListener('input', function() {
-          let query = this.value.trim();
+    $('#search-input').on('input', function () {
+        let query = $(this).val().trim();
 
-          // if (query.length < 2) {
-          //     document.getElementById('search-results').classList.add('d-none');
-          //     return;
-          // }
+        // Optional: Skip if query is too short
+        // if (query.length < 2) {
+        //     $('#search-results').addClass('d-none');
+        //     return;
+        // }
 
-          fetch(`products/search?query=${(query)}`)
-              .then(response => response.json())
-              .then(data => {
-                  const resultsDiv = document.getElementById('search-results');
-                  resultsDiv.innerHTML = '';
+        $.ajax({
+            url: '/search/products',
+            method: 'GET',
+            data: { query: query },
+            success: function (data) {
+                const resultsDiv = $('#search-results');
+                resultsDiv.empty();
 
-                  if (data.length === 0) {
-                      resultsDiv.textContent = '{{ __('site.no_search_results') }}';
-                  } else {
-                      data.forEach(item => {
-                          // console.log(item);
-                          const a = document.createElement('a');
-                          a.href = item.url;
-                          a.className = 'd-block text-start mb-2';
-                          a.textContent = item.name;
-                          resultsDiv.appendChild(a);
-                      });
-                  }
+                if (data.length === 0) {
+                    resultsDiv.text("{{ __('site.no_search_results') }}");
+                } else {
+                    data.forEach(item => {
+                        const a = $('<a></a>')
+                            .attr('href', item.url)
+                            .addClass('d-block text-start mb-2')
+                            .text(item.name);
+                        resultsDiv.append(a);
+                    });
+                }
 
-                  resultsDiv.classList.remove('d-none');
-              });
-      });
-  </script>
+                resultsDiv.removeClass('d-none');
+            },
+            error: function (xhr) {
+                console.error('Search failed:', xhr.responseText);
+            }
+        });
+    });
+</script>
+
 
   <script>
       // modal mobile

@@ -70,4 +70,23 @@ class WebsiteController extends Controller
         return response()->json($results);
     }
 
+    public function searchProduct(Request $request){
+        $query = $request->get('query', '');
+        $results = Product::where('name->ar', 'LIKE', "%{$query}%")
+            ->orWhere('name->en', 'LIKE', "%{$query}%")
+            ->orWhere('sub_title', 'LIKE', "%{$query}%")
+            ->take(10)
+            ->get(['id', 'name', 'slug', 'identifier']) // Optional: select only needed columns
+            ->map(function ($item) {
+                return [
+                    'name' => $item->name,
+                    'slug' => $item->slug,
+                    'identifier' => $item->identifier,
+                    'url' => route('product', ['productSlug' => $item->slug, 'productId' => $item->identifier]),
+                ];
+            });
+
+        return response()->json($results);
+    }
+
 }
