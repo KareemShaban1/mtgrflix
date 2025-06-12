@@ -1,0 +1,8 @@
+.rich-editor-container {
+    max-height: 800px !important;
+    height: 80px !important;
+    overflow-y: scroll !important;
+    -webkit-overflow-scrolling: touch;
+    width: 100% !important;
+    border: 1px solid #ccc !important;
+}
