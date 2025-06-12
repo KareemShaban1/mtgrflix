@@ -59,9 +59,9 @@
         });
 
         // Initialize all product rating modals (mobile)
-        document.querySelectorAll('[id^="modal2-rate-product-"]').forEach(modal => {
-            initializeProductModal(modal, '.submit-rating-2');
-        });
+        // document.querySelectorAll('[id^="modal2-rate-product-"]').forEach(modal => {
+        //     initializeProductModal(modal, '.submit-rating-2');
+        // });
 
         // Function to initialize a product modal
         function initializeProductModal(modal, submitButtonSelector) {
@@ -126,6 +126,10 @@
                             if (data.success) {
                                 toastr.success('تم تقييم المنتج بنجاح');
 
+                                // Get the thank you modal
+                                const thankYouModal = new bootstrap.Modal(document
+                                    .querySelector('[id^="modal-thank-you"]'));
+
                                 // Move to next product or show store rating modal
                                 if (currentIndex < products.length - 1) {
                                     currentIndex++;
@@ -134,15 +138,18 @@
                                     currentProduct.querySelector('textarea').value = '';
                                 } else {
                                     // After last product, show the store rating modal
-                                    const storeModalElement = document.querySelector(
-                                        '[id^="modal-rate-store"]');
-                                    const storeModal = bootstrap.Modal.getOrCreateInstance(
-                                        storeModalElement);
-                                    storeModal.show();
+                                    // const storeModalElement = document.querySelector(
+                                    //     '[id^="modal-rate-store"]');
+                                    // const storeModal = bootstrap.Modal.getOrCreateInstance(
+                                    //     storeModalElement);
+                                    // storeModal.show();
 
                                     // Hide the current product modal
                                     const productModal = bootstrap.Modal.getInstance(modal);
                                     productModal.hide();
+
+                                    thankYouModal.show();
+
                                 }
                             }
                         })
@@ -202,9 +209,9 @@
                                         'coupon-display');
                                     if (couponElement) {
                                         couponElement.textContent = data
-                                        .coupon; // or format as needed
+                                            .coupon; // or format as needed
                                         couponElement.style.display =
-                                        'block'; // Make it visible
+                                            'block'; // Make it visible
 
                                         // Optional: Show discount percentage/amount
                                         const discountElement = document.getElementById(

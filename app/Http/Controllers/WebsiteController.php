@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Cart;
 use App\Models\Product;
+use App\Models\Review;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -13,6 +14,7 @@ class WebsiteController extends Controller
     {
 
         $testimonials = \App\Models\Testimonial::where('is_active', 1)->take(50)->get();
+        $reviews = Review::where('approved', 1)->take(50)->latest()->get();
         $main_categories = \App\Models\Category::with([
             'parent',
             'children.products' => function ($query) {
@@ -23,7 +25,7 @@ class WebsiteController extends Controller
         ->whereNull('parent_id')
         ->get();
 
-        return view('website.home', compact('main_categories', 'testimonials'));
+        return view('website.home', compact('main_categories', 'testimonials','reviews'));
     }
 
     public function categories()
