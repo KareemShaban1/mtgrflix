@@ -16,7 +16,7 @@ class CurrencyMiddleware
 
         // Step 1: Manually selected currency
         if ($request->has('currency')) {
-            // Log::info('Currency manually selected', ['currency' => $request->currency]);
+            Log::info('Currency manually selected', ['currency' => $request->currency]);
             // Clear previous session currency if needed
             session()->forget('currency');
             $this->setCurrencySession($request->currency);
@@ -24,7 +24,7 @@ class CurrencyMiddleware
 
         // Step 2: Auto-detect from IP if not already set
         if (!session()->has('currency')) {
-            // Log::info('Attempting currency auto-detection from IP');
+            Log::info('Attempting currency auto-detection from IP');
             $this->detectCurrencyByIP();
         }
 
@@ -47,7 +47,7 @@ class CurrencyMiddleware
                 'flag'     => $flag,
             ]);
         } else {
-            // Log::warning("Currency code '{$currencyCode}' not found in database. Falling back to SAR.");
+            Log::warning("Currency code '{$currencyCode}' not found in database. Falling back to SAR.");
             // fallback session values
             session([
                 'currency' => 'SAR',
@@ -80,10 +80,10 @@ class CurrencyMiddleware
             }
 
             // If detection failed or no valid currency found
-            // Log::info('Currency detection failed or no valid country data found. Falling back to SAR.');
+            Log::info('Currency detection failed or no valid country data found. Falling back to SAR.');
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         } catch (\Exception $e) {
-            // Log::error('Currency detection failed: ' . $e->getMessage());
+            Log::error('Currency detection failed: ' . $e->getMessage());
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         }
     }
