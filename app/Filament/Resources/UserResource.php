@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources;
 
+use App\Exports\UserExporter;
 use Filament\Forms;
 use App\Models\User;
 use Filament\Tables;
@@ -19,6 +20,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use App\Filament\Resources\UserResource\RelationManagers;
 use App\Filament\Resources\UserResource\RelationManagers\OrdersRelationManager;
 use Illuminate\Database\Eloquent\Model; // Import Model class
+use Filament\Tables\Actions\ExportAction;
 
 class UserResource extends Resource
 {
@@ -132,7 +134,10 @@ class UserResource extends Resource
                 ImportAction::make()
                     ->label(__('site.import_users'))
                     ->importer(UserImporter::class)
-                    ->job(ImportCsv::class)
+                    ->job(ImportCsv::class),
+                ExportAction::make()
+                    ->label(__('site.export_users'))
+                    ->exporter(UserExporter::class),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
