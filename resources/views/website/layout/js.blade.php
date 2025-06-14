@@ -485,18 +485,5 @@
   </script>
 
 
-<script>
-    // Check if not already cleared and user is doing a full reload
-    if (performance.navigation.type === 1) {
-        const url = new URL(window.location.href);
-
-        // If clear_currency not already set
-        if (!url.searchParams.has('clear_currency')) {
-            url.searchParams.set('clear_currency', 'true');
-            window.location.replace(url.href); // Trigger reload with param
-        }
-    }
-</script>
-
 
   @yield('script')

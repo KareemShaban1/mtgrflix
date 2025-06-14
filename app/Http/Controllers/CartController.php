@@ -286,6 +286,7 @@ class CartController extends Controller
             ->first();
 
 
+
         if ($validCoupons && $testimonial) {
             // Set the coupon and discount
             $coupon = $validCoupons;
@@ -306,6 +307,8 @@ class CartController extends Controller
         } elseif ($request->rate == 1) {
             $message = $sendMessage->getTemplate('1_star_review');
         }
+
+
 
         // Send message if prepared
         if ($message) {

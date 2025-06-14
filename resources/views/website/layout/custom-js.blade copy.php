@@ -107,116 +107,75 @@
                         .getAttribute('data-value') : null;
                     const reviewText = currentProduct.querySelector('textarea').value;
 
-                    // Make two requests
-                    Promise.all([
-                            fetch(`/api/submit-review/${orderId}`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                },
-                                body: JSON.stringify({
-                                    rating: rating,
-                                    review: reviewText,
-                                    product: productId
-                                })
-                            }),
-                            fetch(`/api/submit-testimonial`, {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-                                },
-                                body: JSON.stringify({
-                                    rate: rating,
-                                    comment: reviewText
-                                })
+                    // Send the product review to the server
+                    fetch(`/api/submit-review/${orderId}`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content'),
+                            },
+                            body: JSON.stringify({
+                                rating: rating,
+                                review: reviewText,
+                                product: productId,
                             })
-                        ])
-                        .then(async ([productRes, storeRes]) => {
-                            const productData = await productRes.json();
-                            const storeData = await storeRes.json();
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                toastr.success('تم تقييم المنتج بنجاح');
 
-                            if (productData.success && storeData.success) {
-                                toastr.success("تم تقييم المنتج والمتجر بنجاح");
+                                // Get the thank you modal
+                                const thankYouModal = new bootstrap.Modal(document
+                                    .querySelector('[id^="modal-thank-you"]'));
 
-                                // Handle coupon display if available
-                                const coupon = productData.coupon || storeData.coupon;
-                                if (coupon) {
-                                    const couponEl = document.getElementById("coupon-display");
-                                    if (couponEl) {
-                                        couponEl.textContent = coupon.code || coupon;
-                                        couponEl.style.display = "block";
+                                // Move to next product or show store rating modal
+                                if (currentIndex < products.length - 1) {
+                                    currentIndex++;
+                                    showProduct(currentIndex);
+                                    // Clear previous rating and feedback
+                                    currentProduct.querySelector('textarea').value = '';
+                                } else {
+                                    // After last product, show the store rating modal
+                                    // const storeModalElement = document.querySelector(
+                                    //     '[id^="modal-rate-store"]');
+                                    // const storeModal = bootstrap.Modal.getOrCreateInstance(
+                                    //     storeModalElement);
+                                    // storeModal.show();
 
-                                        const discountEl = document.getElementById("coupon-discount");
-                                        if (discountEl && coupon.discount) {
-                                            discountEl.textContent = `(${coupon.discount}% OFF)`;
+                                    // Hide the current product modal
+                                    const productModal = bootstrap.Modal.getInstance(modal);
+                                    productModal.hide();
+
+                                     // Update modal content with coupon if available
+                                if (data.coupon) {
+                                    const couponElement = document.getElementById(
+                                        'coupon-display');
+                                    if (couponElement) {
+                                        couponElement.textContent = data
+                                            .coupon; // or format as needed
+                                        couponElement.style.display =
+                                            'block'; // Make it visible
+
+                                        // Optional: Show discount percentage/amount
+                                        const discountElement = document.getElementById(
+                                            'coupon-discount');
+                                        if (discountElement && data.coupon.discount) {
+                                            discountElement.textContent =
+                                                `(${data.coupon.discount}% OFF)`;
                                         }
                                     }
                                 }
 
-                                const productModal = bootstrap.Modal.getInstance(modal);
-                                productModal.hide();
-                                const thankYouModal = new bootstrap.Modal(document.getElementById("modal-thank-you"));
-                                thankYouModal.show();
-                            } else {
-                                toastr.error("حدث خطأ أثناء الإرسال.");
+                                    thankYouModal.show();
+
+                                }
                             }
                         })
                         .catch(error => {
-                            console.error("Error submitting both reviews:", error);
-                            toastr.error("فشل إرسال التقييمات.");
+                            console.error('Error submitting review:', error);
                         });
-
-                    // Send the product review to the server
-                    // fetch(`/api/submit-review/${orderId}`, {
-                    //         method: 'POST',
-                    //         headers: {
-                    //             'Content-Type': 'application/json',
-                    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                    //                 .getAttribute('content'),
-                    //         },
-                    //         body: JSON.stringify({
-                    //             rating: rating,
-                    //             review: reviewText,
-                    //             product: productId,
-                    //         })
-                    //     })
-                    //     .then(response => response.json())
-                    //     .then(data => {
-                    //         if (data.success) {
-                    //             toastr.success('تم تقييم المنتج بنجاح');
-
-                    //             // Get the thank you modal
-                    //             const thankYouModal = new bootstrap.Modal(document
-                    //                 .querySelector('[id^="modal-thank-you"]'));
-
-                    //             // Move to next product or show store rating modal
-                    //             if (currentIndex < products.length - 1) {
-                    //                 currentIndex++;
-                    //                 showProduct(currentIndex);
-                    //                 // Clear previous rating and feedback
-                    //                 currentProduct.querySelector('textarea').value = '';
-                    //             } else {
-                    //                 // After last product, show the store rating modal
-                    //                 // const storeModalElement = document.querySelector(
-                    //                 //     '[id^="modal-rate-store"]');
-                    //                 // const storeModal = bootstrap.Modal.getOrCreateInstance(
-                    //                 //     storeModalElement);
-                    //                 // storeModal.show();
-
-                    //                 // Hide the current product modal
-                    //                 const productModal = bootstrap.Modal.getInstance(modal);
-                    //                 productModal.hide();
-
-                    //                 thankYouModal.show();
-
-                    //             }
-                    //         }
-                    //     })
-                    //     .catch(error => {
-                    //         console.error('Error submitting review:', error);
-                    //     });
                 });
             }
         }
