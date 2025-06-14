@@ -69,8 +69,8 @@ class CurrencyMiddleware
                 $data = $response->json();
                 $callingCode = $data['calling_code'] ?? null;
 
-                Log::info('Calling code detected: ' . $callingCode);
-                Log::info('data detected: ' . $data);
+                Log::info('Calling code detected: ' , [$callingCode]);
+                Log::info('data detected: ' , [$data]);
 
                 if ($callingCode) {
                     $country = Country::where('code', $callingCode)->first();
