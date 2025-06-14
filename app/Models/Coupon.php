@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -25,6 +25,23 @@ class Coupon extends Model
         'valid_until' => 'datetime',
     ];
 
+    protected $appends = ['uses_count', 'unique_users_count', 'total_discount'];
+
+    protected function usesCount(): Attribute
+    {
+        return Attribute::get(fn () => $this->usageCount());
+    }
+
+    protected function uniqueUsersCount(): Attribute
+    {
+        return Attribute::get(fn () => $this->uniqueClientsCount());
+    }
+
+    protected function totalDiscount(): Attribute
+    {
+        return Attribute::get(fn () => round($this->totalDiscountAmount(), 2));
+    }
+
     // public function orders()
     // {
     //     return $this->belongsToMany(Order::class);
@@ -36,8 +53,35 @@ class Coupon extends Model
         return $this->hasOne(Cart::class);
     }
 
+    public function carts()
+    {
+        return $this->hasMany(Cart::class);
+    }
+
+
     public function testimonial(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
         return $this->hasOne(Testimonial::class);
+    }
+
+    public function usageCount(): int
+    {
+        return $this->carts()->count();
+    }
+
+    public function totalDiscountAmount(): float
+    {
+        return $this->carts()->get()->sum(function ($cart) {
+            $total = $cart->getTotal();
+            return $this->type === 'percentage'
+                ? ($total * $this->value / 100)
+                : min($this->value, $total);
+        });
+    }
+    
+
+    public function uniqueClientsCount(): int
+    {
+        return $this->carts()->distinct('user_id')->count('user_id');
     }
 }

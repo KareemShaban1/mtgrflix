@@ -113,6 +113,15 @@ class CouponResource extends Resource
                 //     ->label(__('site.uses_count'))
                 //     // ->counts('orders')
                 //     ,
+                Tables\Columns\TextColumn::make('uses_count')
+                    ->label(__('site.uses_count')),
+
+                Tables\Columns\TextColumn::make('unique_users_count')
+                    ->label(__('site.client_count')),
+
+                Tables\Columns\TextColumn::make('total_discount')
+                    ->label(__('site.total_discount')),
+
 
                 Tables\Columns\TextColumn::make('max_uses')
                     ->label(__('site.max_uses')),
@@ -148,9 +157,9 @@ class CouponResource extends Resource
     {
         if (request()->routeIs('filament.admin.resources.coupons.index')) {
             return parent::getEloquentQuery()
-                ->doesntHave('cart')
+                // ->doesntHave('cart')
                 ->doesntHave('testimonial')
-                ->whereNull('max_uses')
+                // ->whereNull('max_uses')
                 ->latest();
         }
 
