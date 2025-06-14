@@ -59,9 +59,9 @@
         });
 
         // Initialize all product rating modals (mobile)
-        // document.querySelectorAll('[id^="modal2-rate-product-"]').forEach(modal => {
-        //     initializeProductModal(modal, '.submit-rating-2');
-        // });
+        document.querySelectorAll('[id^="modal2-rate-product-"]').forEach(modal => {
+            initializeProductModal(modal, '.submit-rating-2');
+        });
 
         // Function to initialize a product modal
         function initializeProductModal(modal, submitButtonSelector) {
