@@ -70,6 +70,8 @@ class CurrencyMiddleware
             if ($response->ok()) {
                 $data = $response->json();
                 $callingCode = $data['calling_code'] ?? null;
+                Log::info('IP Info API Response:', [$data]); // Add this
+
 
 
                 if ($callingCode) {
