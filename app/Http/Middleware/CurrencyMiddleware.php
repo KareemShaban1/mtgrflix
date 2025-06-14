@@ -68,6 +68,7 @@ class CurrencyMiddleware
             // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
             $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
 
+            Log::info('IP Info API Response:', [$response]); // Add this
 
             if ($response->ok()) {
                 $data = $response->json();
