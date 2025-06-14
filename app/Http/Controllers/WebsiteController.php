@@ -77,6 +77,7 @@ class WebsiteController extends Controller
         $results = Product::where('name->ar', 'LIKE', "%{$query}%")
             ->orWhere('name->en', 'LIKE', "%{$query}%")
             ->orWhere('sub_title', 'LIKE', "%{$query}%")
+            ->where('is_active',1)
             ->take(10)
             ->get(['id', 'name', 'slug', 'identifier']) // Optional: select only needed columns
             ->map(function ($item) {
