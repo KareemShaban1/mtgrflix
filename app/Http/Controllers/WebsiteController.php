@@ -74,12 +74,15 @@ class WebsiteController extends Controller
 
     public function searchProduct(Request $request){
         $query = $request->get('query', '');
-        $results = Product::where('name->ar', 'LIKE', "%{$query}%")
-            ->orWhere('name->en', 'LIKE', "%{$query}%")
-            ->orWhere('sub_title', 'LIKE', "%{$query}%")
-            ->where('is_active',1)
+    
+        $results = Product::where(function ($q) use ($query) {
+                $q->where('name->ar', 'LIKE', "%{$query}%")
+                  ->orWhere('name->en', 'LIKE', "%{$query}%")
+                  ->orWhere('sub_title', 'LIKE', "%{$query}%");
+            })
+            ->where('is_active', 1)
             ->take(10)
-            ->get(['id', 'name', 'slug', 'identifier']) // Optional: select only needed columns
+            ->get(['id', 'name', 'slug', 'identifier'])
             ->map(function ($item) {
                 return [
                     'name' => $item->name,
@@ -88,8 +91,9 @@ class WebsiteController extends Controller
                     'url' => route('product', ['productSlug' => $item->slug, 'productId' => $item->identifier]),
                 ];
             });
-
+    
         return response()->json($results);
     }
+    
 
 }
