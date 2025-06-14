@@ -14,11 +14,13 @@ class CurrencyMiddleware
     public function handle(Request $request, Closure $next)
     {
 
+        session()->forget('currency');
+
         // Step 1: Manually selected currency
         if ($request->has('currency')) {
             Log::info('Currency manually selected', ['currency' => $request->currency]);
             // Clear previous session currency if needed
-            session()->forget('currency');
+            // session()->forget('currency');
             $this->setCurrencySession($request->currency);
         }
 
@@ -69,8 +71,6 @@ class CurrencyMiddleware
                 $data = $response->json();
                 $callingCode = $data['calling_code'] ?? null;
 
-                Log::info('Calling code detected: ' , [$callingCode]);
-                Log::info('data detected: ' , [$data]);
 
                 if ($callingCode) {
                     $country = Country::where('code', $callingCode)->first();
