@@ -65,7 +65,9 @@ class CurrencyMiddleware
     {
         try {
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
+            // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
             $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
+
 
             if ($response->ok()) {
                 $data = $response->json();
