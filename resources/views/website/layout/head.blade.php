@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="google-site-verification" content="zzSNfelUfLN3UITTwMT4FJQCHDFpBDYFTW_LL3slYqo" />
 
     <!-- ========== ANTI-PREVIEW SYSTEM ========== -->
     @if(request()->is('my-orders/*'))
