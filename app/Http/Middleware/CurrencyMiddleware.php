@@ -86,7 +86,7 @@ class CurrencyMiddleware
             Log::info('Currency detection failed or no valid country data found. Falling back to SAR.');
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         } catch (\Exception $e) {
-            Log::error('Currency detection failed: ' . $e->getMessage());
+            Log::error('Currency detection failed', ['error' => $e->getMessage()]);
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         }
     }
