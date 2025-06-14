@@ -22,11 +22,12 @@
                     <!-- <p class="lead">عذراً، لم يتم إكمال عملية الدفع بنجاح</p> -->
                     <p class="lead"> يرجى التأكد من صحة معلومات البطاقة وأن يكون بها رصيد كافٍ، ثم المحاولة مرة أخرى.
                     </p>
-                    <p class="lead"> في حال تكرار المشكله تواصل معنا عبر الواتساب اضغط هنا
-                        <a href="https://wa.me/966551200896" class="btn btn-primary">
-                            <i class="bx bxl-whatsapp text-success fa-3x"></i>
-                        </a>
+                    <p class="lead"> في حال تكرار المشكله تواصل معنا عبر الواتساب
+                        <span><a href="https://wa.me/966551200896">اضغط هنا</a></span>
                     </p>
+                    <a href="https://wa.me/966551200896">
+                        <i class="bx bxl-whatsapp text-success fa-3x"></i>
+                    </a>
 
 
 
