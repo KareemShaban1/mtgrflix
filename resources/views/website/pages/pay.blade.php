@@ -143,7 +143,7 @@
         const originalAmount = {{ $total }};
         const language = "{{ app()->getLocale() }}";
 
-        let finalAmount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
+        let finalAmount = (originalAmount * rate).toFixed(2).toString();
 
         console.log(countryCode , currencyCode , finalAmount , sessionId)
         const totalEl = document.querySelector('.order-total-value');
@@ -338,7 +338,7 @@
 
                 totalEl.textContent = convertedAmount.toFixed(2);
 
-                config.amount = convertedAmount.toFixed(2);
+                config.amount = convertedAmount.toFixed(2).toString();
 
                 unifiedSession.innerHTML = "";
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
@@ -362,7 +362,7 @@
                 const convertedOriginalAmount = originalOrderAmount * rate;
                 totalEl.textContent = convertedOriginalAmount.toFixed(2);
 
-                config.amount = convertedOriginalAmount.toFixed(2);
+                config.amount = convertedOriginalAmount.toFixed(2).toString();
                 unifiedSession.innerHTML = "";
 
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
