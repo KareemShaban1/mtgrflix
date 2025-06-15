@@ -121,6 +121,21 @@
     @endif
 
     <script>
+        function logToServer(error) {
+    fetch("/log-client-error", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
+        },
+        body: JSON.stringify({
+            url: window.location.href,
+            message: error.message || error.toString(),
+            stack: error.stack || null,
+            timestamp: new Date().toISOString(),
+        }),
+    }).catch(console.warn);
+}
         const totalEl = document.querySelector('.order-total-value');
 
         var sessionId = "{{ $sessionId }}";
@@ -138,7 +153,11 @@
             containerId: "unified-session",
             paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"], //"GooglePay", "ApplePay", "Card", "STCPay"
             supportedNetworks: ["visa", "masterCard", "mada", "amex"], //"visa", "masterCard", "mada", "amex"
-            language: language
+            language: language,
+            onError: function (err) {
+                console.error("MyFatoorah Error:", err);
+                logToServer(err);
+            }
 
         };
 
