@@ -130,7 +130,7 @@
 
         let finalAmount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
 
-        console.log(countryCode , currencyCode , finalAmount , payment)
+        console.log(countryCode , currencyCode , finalAmount , sessionId)
         const totalEl = document.querySelector('.order-total-value');
         if (totalEl) totalEl.textContent = finalAmount;
 

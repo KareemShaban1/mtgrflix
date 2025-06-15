@@ -51,7 +51,7 @@ class NewPaymentController extends Controller
         ]);
 
         $result = json_decode($response->getBody(), true);
-        // dd($result);
+
         if ($result['IsSuccess']) {
             return [
                 'sessionId' => $result['Data']['SessionId'],
