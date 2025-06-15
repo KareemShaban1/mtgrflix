@@ -126,29 +126,24 @@
         var sessionId = "{{ $sessionId }}";
         var countryCode = "{{ $countryCode }}";
         var currencyCode = "{{ session('currency', 1) }}";
-
-        // ✅ FIX: Convert amount based on current currency rate
-        var originalAmount = {{ $total }};
-        var currentRate = {{ session('rate', 1) }};
-        var convertedAmount = originalAmount * currentRate;
-
+        var amount = "{{ $total }}";
         var language = "{{ app()->getLocale() }}";
-
-        console.log('Original Amount:', originalAmount);
-        console.log('Current Rate:', currentRate);
-        console.log('Converted Amount:', convertedAmount);
-
+        console.log(amount);
         var config = {
             sessionId: sessionId,
             countryCode: countryCode,
             currencyCode: currencyCode,
-            amount: convertedAmount.toFixed(2), // ✅ Use converted amount
+            amount: amount,
             callback: payment,
             containerId: "unified-session",
-            paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"],
-            supportedNetworks: ["visa", "masterCard", "mada", "amex"],
+            paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"], //"GooglePay", "ApplePay", "Card", "STCPay"
+            supportedNetworks: ["visa", "masterCard", "mada", "amex"], //"visa", "masterCard", "mada", "amex"
             language: language
+
+
+
         };
+
 
         myfatoorah.init(config);
         //myfatoorah.submitStcOtp("1234");
@@ -361,20 +356,19 @@
 
                 couponCodeInput.dataset.appliedCode = code;
 
-               // ✅ FIX: Apply discount to original amount, then convert
-        const finalOriginalAmount = originalOrderAmount - discount;
-        const finalConvertedAmount = finalOriginalAmount * rate;
-        
-        totalEl.textContent = finalConvertedAmount.toFixed(2);
-        
-        // ✅ Update MyFatoorah config with converted discounted amount
-        config.amount = finalConvertedAmount.toFixed(2);
+                const finalAmount = originalOrderAmount - discount;
+                const convertedAmount = finalAmount * rate;
 
-                // Re-initialize MyFatoorah session
-        unifiedSession.innerHTML = "";
-        if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
-            myfatoorah.init(config);
-        }
+                totalEl.textContent = convertedAmount.toFixed(2);
+
+                // ✅ Update MyFatoorah config to use discounted amount
+                config.amount = finalAmount.toFixed(2);
+
+                // ✅ Re-initialize MyFatoorah session
+                unifiedSession.innerHTML = "";
+                if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
+                    myfatoorah.init(config);
+                }
             }
 
 
@@ -390,43 +384,19 @@
                 resetTotal();
             }
 
-                    function resetTotal() {
-                // ✅ FIX: Reset to converted original amount
+            function resetTotal() {
                 const convertedOriginalAmount = originalOrderAmount * rate;
                 totalEl.textContent = convertedOriginalAmount.toFixed(2);
-                
-                // ✅ Update config with converted amount
-                config.amount = convertedOriginalAmount.toFixed(2);
-                
+
+                config.amount = originalOrderAmount.toFixed(2);
+
                 unifiedSession.innerHTML = "";
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
                     myfatoorah.init(config);
                 }
-                
+
                 $('#discount-amount').val('');
             }
         });
-
-        // ✅ Add currency change handler (if you have dynamic currency switching)
-function updateCurrency(newRate, newCurrencyCode) {
-    currentRate = newRate;
-    currencyCode = newCurrencyCode;
-    
-    // Recalculate amount with new rate
-    const currentDisplayAmount = parseFloat(totalEl.textContent);
-    const originalAmount = currentDisplayAmount / rate; // Get back to original
-    const newConvertedAmount = originalAmount * newRate;
-    
-    // Update display
-    totalEl.textContent = newConvertedAmount.toFixed(2);
-    
-    // Update MyFatoorah config
-    config.currencyCode = newCurrencyCode;
-    config.amount = newConvertedAmount.toFixed(2);
-    
-    // Re-initialize payment session
-    document.getElementById("unified-session").innerHTML = "";
-    myfatoorah.init(config);
-}
     </script>
 @endsection
