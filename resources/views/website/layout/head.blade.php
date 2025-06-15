@@ -78,12 +78,12 @@
 
         }
         
-        .slider-section .item img {
+        /* .slider-section .item img {
                 width: 100%;
                 height: auto;
                 max-height: 550px;
                 object-fit: contain;
-            }
+            } */
     </style>
 
     @if (app()->getLocale() == 'ar')
