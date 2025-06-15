@@ -126,9 +126,11 @@
         var sessionId = "{{ $sessionId }}";
         var countryCode = "{{ $countryCode }}";
         var currencyCode = "{{ session('currency', 1) }}";
-        var amount = "{{ $total }}";
+        const originalAmount = {{ $total }};
+        const rate = {{ session('rate', 1) }};
+        const amount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
         var language = "{{ app()->getLocale() }}";
-        console.log(amount);
+        console.log(countryCode , currencyCode , amount , sessionId)
         var config = {
             sessionId: sessionId,
             countryCode: countryCode,
