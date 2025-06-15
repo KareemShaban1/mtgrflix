@@ -140,8 +140,6 @@
             supportedNetworks: ["visa", "masterCard", "mada", "amex"], //"visa", "masterCard", "mada", "amex"
             language: language
 
-
-
         };
 
 

@@ -129,14 +129,15 @@
         const language = "{{ app()->getLocale() }}";
 
         let finalAmount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
-        finalAmount = parseFloat(finalAmount);
 
+        console.log(countryCode , currencyCode , finalAmount , payment)
         const totalEl = document.querySelector('.order-total-value');
         if (totalEl) totalEl.textContent = finalAmount;
 
         const config = {
             sessionId: sessionId,
-            countryCode: countryCode,
+            // countryCode: countryCode,
+            countryCode: currencyCode,
             currencyCode: currencyCode,
             amount: finalAmount,
             callback: payment,
