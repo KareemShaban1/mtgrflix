@@ -82,7 +82,7 @@
                 width: 100%;
                 height: auto;
                 max-height: 550px;
-                object-fit: none;
+                object-fit: contain;
             }
     </style>
 
