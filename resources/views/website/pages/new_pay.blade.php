@@ -129,7 +129,6 @@
         const language = "{{ app()->getLocale() }}";
 
         let finalAmount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
-        finalAmount = parseFloat(finalAmount);
 
         const totalEl = document.querySelector('.order-total-value');
         if (totalEl) totalEl.textContent = finalAmount;
