@@ -89,7 +89,8 @@ class OrderController extends Controller
 
             return view('website.pages.pay', [
                 'sessionId' => $paymentSession['sessionId'],
-                'countryCode' => $paymentSession['CountryCode'],
+                // 'countryCode' => $paymentSession['CountryCode'],
+                'countryCode' => session('country'),
                 'total' => session('checkout_data.total'),
                 'productId' => $productId,
                 'options' => $options,
@@ -138,7 +139,8 @@ class OrderController extends Controller
 
         return view('website.pages.pay', [
             'sessionId' => $paymentSession['sessionId'],
-            'countryCode' => $paymentSession['CountryCode'],
+            // 'countryCode' => $paymentSession['CountryCode'],
+            'countryCode' => session('country'),
             'cart' => $request->input('cart'),
             'total' => $cartTotal,
             'currencyCode' => session('currency'),

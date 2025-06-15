@@ -11,51 +11,73 @@ use Illuminate\Support\Facades\Log;
 
 class CurrencyMiddleware
 {
+    // Mapping of calling codes to ISO 3166-1 alpha-3 codes
+     // Mapping of ISO 3166-1 alpha-3 country codes to currency codes
+     private array $currencyToCountryMap = [
+        'SAR' => 'SAU',
+        'EGP' => 'EGY',
+        'AED' => 'ARE',
+        'QAR' => 'QAT',
+        'USD' => 'USA',
+        'GBP' => 'GBR',
+        'KWD' => 'KWT',
+        'JOD' => 'JOR',
+        'SYP' => 'SYR',
+        'LBP' => 'LBN',
+        'TND' => 'TUN',
+        'MAD' => 'MAR',
+        'DZD' => 'DZA',
+        'SDG' => 'SDN',
+        'BHD' => 'BHR',
+        'IQD' => 'IRQ',
+        'YER' => 'YEM',
+        // Add more mappings if needed
+    ];
+    
+
+
     public function handle(Request $request, Closure $next)
     {
-
-        // session()->forget('currency');
-
-        // Step 1: Manually selected currency
+        // Manually selected
         if ($request->has('currency')) {
             Log::info('Currency manually selected', ['currency' => $request->currency]);
-            // Clear previous session currency if needed
             session()->forget('currency');
-            $this->setCurrencySession($request->currency);
+            $this->setCurrencySession($request->currency, $request->code);
         }
 
-        // Step 2: Auto-detect from IP if not already set
+        // Auto-detect
         if (!session()->has('currency')) {
             Log::info('Attempting currency auto-detection from IP');
             $this->detectCurrencyByIP();
         }
 
-        // Step 3: Share current currency with views
+        // Share with views
         view()->share('currentCurrency', session('currency'));
 
         return $next($request);
     }
 
-    private function setCurrencySession($currencyCode, $countryCode = '966', $flag = '🇸🇦')
+    private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
     {
         $currency = Currency::where('code', $currencyCode)->first();
+        $countryAlpha3 = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
 
+        // dd($currencyCode, $callingCode ,$countryAlpha3);
         if ($currency) {
             session([
                 'currency' => $currency->code,
                 'rate'     => $currency->exchange_rate,
                 'symbol'   => $currency->symbol,
-                'country'  => $countryCode,
+                'country'  => $countryAlpha3,
                 'flag'     => $flag,
             ]);
         } else {
-            Log::warning("Currency code '{$currencyCode}' not found in database. Falling back to SAR.");
-            // fallback session values
+            Log::warning("Currency '{$currencyCode}' not found. Using fallback SAR.");
             session([
                 'currency' => 'SAR',
                 'rate'     => 1,
                 'symbol'   => 'SAR',
-                'country'  => $countryCode,
+                'country'  => 'SAU',
                 'flag'     => $flag,
             ]);
         }
@@ -66,32 +88,27 @@ class CurrencyMiddleware
         try {
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
             $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
-            // $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
-
-            Log::info('IP Info API Response:', [$response]); // Add this
 
             if ($response->ok()) {
                 $data = $response->json();
                 $callingCode = $data['calling_code'] ?? null;
-                Log::info('IP Info API Response:', [$data]); // Add this
+                $flag = $data['flag']['emoji'] ?? '🇸🇦';
 
-
+                Log::info('IP detection result:', ['calling_code' => $callingCode]);
 
                 if ($callingCode) {
                     $country = Country::where('code', $callingCode)->first();
-
                     if ($country && $country->currency) {
-                        $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? '🇸🇦');
+                        $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? $flag);
                         return;
                     }
                 }
             }
 
-            // If detection failed or no valid currency found
-            Log::info('Currency detection failed or no valid country data found. Falling back to SAR.');
+            Log::info('Currency detection failed. Falling back to SAR.');
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         } catch (\Exception $e) {
-            Log::error('Currency detection failed', ['error' => $e->getMessage()]);
+            Log::error('Currency detection exception', ['error' => $e->getMessage()]);
             $this->setCurrencySession('SAR', '966', '🇸🇦');
         }
     }

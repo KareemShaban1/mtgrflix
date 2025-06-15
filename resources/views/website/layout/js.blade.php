@@ -117,6 +117,7 @@
           item.addEventListener('click', function(e) {
               e.preventDefault();
               const currency = this.dataset.currency;
+              const code = this.dataset.code;
 
               fetch("{{ route('set.currency') }}", {
                       method: "POST",
@@ -125,7 +126,8 @@
                           'Content-Type': 'application/json'
                       },
                       body: JSON.stringify({
-                          currency: currency
+                          currency: currency,
+                          code: code
                       })
                   })
                   .then(response => response.json())

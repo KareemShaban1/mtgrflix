@@ -136,8 +136,7 @@
 
         const config = {
             sessionId: sessionId,
-            // countryCode: countryCode,
-            countryCode: currencyCode,
+            countryCode: countryCode,
             currencyCode: currencyCode,
             amount: finalAmount,
             callback: payment,
