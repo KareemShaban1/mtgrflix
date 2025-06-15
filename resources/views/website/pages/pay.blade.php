@@ -115,34 +115,29 @@
 
 @section('script')
     @if (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
-        <script src="https://demo.myfatoorah.com/payment/v1/session.js"></script> {{-- Sandbox --}}
+        <script src="https://demo.myfatoorah.com/payment/v1/session.js"></script>
     @else
-        <script src="https://sa.myfatoorah.com/payment/v1/session.js"></script> {{-- Live (SAU) --}}
+        <script src="https://sa.myfatoorah.com/payment/v1/session.js"></script>
     @endif
 
     <script>
+        const sessionId = "{{ $sessionId }}";
+        const countryCode = "{{ $countryCode }}";
+        const currencyCode = "{{ session('currency', 1) }}";
+        const rate = {{ session('rate', 1) }};
+        const originalAmount = {{ $total }};
+        const language = "{{ app()->getLocale() }}";
+
+        let finalAmount = (originalAmount * rate).toFixed(2); // 💰 Use converted amount
+
         const totalEl = document.querySelector('.order-total-value');
+        if (totalEl) totalEl.textContent = finalAmount;
 
-        var sessionId = "{{ $sessionId }}";
-        var countryCode = "{{ $countryCode }}";
-        var currencyCode = "{{ session('currency', 1) }}";
-
-        // ✅ FIX: Convert amount based on current currency rate
-        var originalAmount = {{ $total }};
-        var currentRate = {{ session('rate', 1) }};
-        var convertedAmount = originalAmount * currentRate;
-
-        var language = "{{ app()->getLocale() }}";
-
-        console.log('Original Amount:', originalAmount);
-        console.log('Current Rate:', currentRate);
-        console.log('Converted Amount:', convertedAmount);
-
-        var config = {
+        const config = {
             sessionId: sessionId,
             countryCode: countryCode,
             currencyCode: currencyCode,
-            amount: convertedAmount.toFixed(2), // ✅ Use converted amount
+            amount: finalAmount,
             callback: payment,
             containerId: "unified-session",
             paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"],
@@ -151,63 +146,37 @@
         };
 
         myfatoorah.init(config);
-        //myfatoorah.submitStcOtp("1234");
 
-        //Embedded Functions
         function payment(response) {
-            //Pass session id to your backend here
-
-            //save order here to your backend  with all inpits values
             if (response.isSuccess) {
                 submitOrderToBackend(response.sessionId, response.paymentType);
-
-                switch (response.paymentType) {
-                    case "ApplePay":
-                        console.log("Apple Pay Response>>\n" + JSON.stringify(response));
-                        break;
-                    case "GooglePay":
-                        console.log("Google Pay response >>\n" + JSON.stringify(response));
-                        break;
-                    case "Card":
-                        console.log("Card Response >>\n" + JSON.stringify(response));
-                        break;
-                    case "StcPay":
-                        console.log("STC Pay response >>\n" + JSON.stringify(response));
-                        break;
-                    default:
-                        console.log("Unknown payment type >>\n" + JSON.stringify(response));
-                        break;
-                }
+                console.log(`${response.paymentType} Response >>`, response);
             } else {
-                console.log("error", response);
+                console.error("Payment Error >>", response);
             }
         }
 
-        function updateAmount(amount) {
-            myfatoorah.updateAmount(amount);
-        }
-
-
         function submitOrderToBackend(sessionId, paymentType) {
-
             const formData = new FormData();
             const url = '{{ route('final-checkout') }}';
 
             formData.append('session_id', sessionId);
+            formData.append('payment_type', paymentType);
 
             const cartInput = document.querySelector('input[name="cart"]');
             if (cartInput) formData.append('cart', cartInput.value);
 
-            formData.append('payment_type', paymentType);
-
-            const amountElement = document.querySelector('.order-total-value');
-            if (amountElement) formData.append('amount', amountElement.textContent.trim());
+            const productIdInput = document.querySelector('input[name="product_id"]');
+            if (productIdInput) formData.append('product_id', productIdInput.value);
 
             const couponCode = document.getElementById('coupon_code');
             if (couponCode) formData.append('code', couponCode.value.trim());
 
-            const productIdInput = document.querySelector('input[name="product_id"]');
-            if (productIdInput) formData.append('product_id', productIdInput.value);
+            const amountElement = document.querySelector('.order-total-value');
+            if (amountElement) {
+                const amt = parseFloat(amountElement.textContent.trim());
+                formData.append('amount', amt.toFixed(2));
+            }
 
             document.querySelectorAll('input[name^="product_options"]').forEach(input => {
                 if (input.name && input.value !== null) {
@@ -215,28 +184,22 @@
                 }
             });
 
-
-            // 🔐 Send to backend (adjust your route)
             fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: formData
-                })
-                .then(res => res.json())
-                .then(data => {
-
-                    if (data.success) {
-                        window.location.href = data.url;
-                    } else {
-                        alert('خطأ أثناء الحفظ: ' + (data.message || ''));
-                    }
-                })
-                .catch(err => console.error('Error submitting order:', err));
+                method: 'POST',
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = data.url;
+                } else {
+                    alert('خطأ أثناء الحفظ: ' + (data.message || ''));
+                }
+            })
+            .catch(err => console.error('Error submitting order:', err));
         }
     </script>
-
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -249,9 +212,8 @@
             const unifiedSession = document.getElementById("unified-session");
             const removeButton = document.getElementById('removeDiscountBtn');
 
-            if (!couponCodeInput || !msgDiv || !totalEl || !loading || !btnText || !applyButton || !
-                unifiedSession || !removeButton) {
-                console.error('One or more required elements are missing from the DOM');
+            if (!couponCodeInput || !msgDiv || !totalEl || !loading || !btnText || !applyButton || !unifiedSession || !removeButton) {
+                console.error('Missing DOM elements.');
                 return;
             }
 
@@ -260,9 +222,7 @@
             const initialCoupon = couponCodeInput.value.trim();
 
             if (initialCoupon) {
-                setTimeout(() => {
-                    applyButton.click();
-                }, 100);
+                setTimeout(() => applyButton.click(), 100);
             }
 
             applyButton.addEventListener('click', async function() {
@@ -290,10 +250,6 @@
                         `/api/apply-coupon?code=${encodeURIComponent(couponCode)}&amount=${originalOrderAmount}`
                     );
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-
                     const data = await response.json();
 
                     if (data.valid) {
@@ -318,19 +274,15 @@
             });
 
             removeButton.addEventListener('click', function() {
-                // Reset everything
                 couponCodeInput.value = '';
                 couponCodeInput.dataset.appliedCode = '';
                 couponCodeInput.removeAttribute('readonly');
-
                 msgDiv.className = '';
                 msgDiv.innerText = '';
                 applyButton.classList.remove('d-none');
                 removeButton.classList.add('d-none');
                 resetTotal();
             });
-
-            // Helper Functions
 
             function toggleLoading(isLoading) {
                 loading.classList.toggle('d-none', !isLoading);
@@ -361,22 +313,18 @@
 
                 couponCodeInput.dataset.appliedCode = code;
 
-               // ✅ FIX: Apply discount to original amount, then convert
-        const finalOriginalAmount = originalOrderAmount - discount;
-        const finalConvertedAmount = finalOriginalAmount * rate;
-        
-        totalEl.textContent = finalConvertedAmount.toFixed(2);
-        
-        // ✅ Update MyFatoorah config with converted discounted amount
-        config.amount = finalConvertedAmount.toFixed(2);
+                const finalAmount = originalOrderAmount - discount;
+                const convertedAmount = finalAmount * rate;
 
-                // Re-initialize MyFatoorah session
-        unifiedSession.innerHTML = "";
-        if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
-            myfatoorah.init(config);
-        }
+                totalEl.textContent = convertedAmount.toFixed(2);
+
+                config.amount = convertedAmount.toFixed(2);
+
+                unifiedSession.innerHTML = "";
+                if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
+                    myfatoorah.init(config);
+                }
             }
-
 
             function handleInvalidCode(message) {
                 couponCodeInput.dataset.appliedCode = '';
@@ -390,43 +338,20 @@
                 resetTotal();
             }
 
-                    function resetTotal() {
-                // ✅ FIX: Reset to converted original amount
+            function resetTotal() {
                 const convertedOriginalAmount = originalOrderAmount * rate;
                 totalEl.textContent = convertedOriginalAmount.toFixed(2);
-                
-                // ✅ Update config with converted amount
+
                 config.amount = convertedOriginalAmount.toFixed(2);
-                
                 unifiedSession.innerHTML = "";
+
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
                     myfatoorah.init(config);
                 }
-                
+
                 $('#discount-amount').val('');
             }
         });
-
-        // ✅ Add currency change handler (if you have dynamic currency switching)
-function updateCurrency(newRate, newCurrencyCode) {
-    currentRate = newRate;
-    currencyCode = newCurrencyCode;
-    
-    // Recalculate amount with new rate
-    const currentDisplayAmount = parseFloat(totalEl.textContent);
-    const originalAmount = currentDisplayAmount / rate; // Get back to original
-    const newConvertedAmount = originalAmount * newRate;
-    
-    // Update display
-    totalEl.textContent = newConvertedAmount.toFixed(2);
-    
-    // Update MyFatoorah config
-    config.currencyCode = newCurrencyCode;
-    config.amount = newConvertedAmount.toFixed(2);
-    
-    // Re-initialize payment session
-    document.getElementById("unified-session").innerHTML = "";
-    myfatoorah.init(config);
-}
     </script>
 @endsection
+
