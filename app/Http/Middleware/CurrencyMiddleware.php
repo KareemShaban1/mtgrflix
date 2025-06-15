@@ -14,13 +14,13 @@ class CurrencyMiddleware
     public function handle(Request $request, Closure $next)
     {
 
-        session()->forget('currency');
+        // session()->forget('currency');
 
         // Step 1: Manually selected currency
         if ($request->has('currency')) {
             Log::info('Currency manually selected', ['currency' => $request->currency]);
             // Clear previous session currency if needed
-            // session()->forget('currency');
+            session()->forget('currency');
             $this->setCurrencySession($request->currency);
         }
 
@@ -65,8 +65,8 @@ class CurrencyMiddleware
     {
         try {
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
-            // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
-            $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
+            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
+            // $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
 
             Log::info('IP Info API Response:', [$response]); // Add this
 

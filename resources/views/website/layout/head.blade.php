@@ -12,7 +12,7 @@
     </script>
 
     @include('filament-seo::google-analytics')
-    
+
     <meta name="google-site-verification" content="zzSNfelUfLN3UITTwMT4FJQCHDFpBDYFTW_LL3slYqo" />
 
     <!-- <meta name="google-site-verification" content="0v1g2q3r4s5t6u7v8w9x0y1z2a3b4c5d6e7f8g9h0i1j2k3l4m5n6o7p8q9r0s1t2u3v4w5x6y7z8a9b0c1d2e3f4g5h6i7j8k9l0m" /> -->
@@ -74,7 +74,16 @@
                 height: 35px !important;
                 object-fit: contain;
             }
+
+
         }
+        
+        .slider-section .item img {
+                width: 100%;
+                height: auto;
+                max-height: 550px;
+                object-fit: contain;
+            }
     </style>
 
     @if (app()->getLocale() == 'ar')
