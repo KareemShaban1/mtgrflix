@@ -58,6 +58,11 @@ class Coupon extends Model
         return $this->hasMany(Cart::class);
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
 
     public function testimonial(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
@@ -66,22 +71,26 @@ class Coupon extends Model
 
     public function usageCount(): int
     {
-        return $this->carts()->count();
+        return $this->orders()->count();
     }
 
     public function totalDiscountAmount(): float
     {
-        return $this->carts()->get()->sum(function ($cart) {
-            $total = $cart->getTotal();
-            return $this->type === 'percentage'
-                ? ($total * $this->value / 100)
-                : min($this->value, $total);
+        return $this->orders->sum(function ($order) {
+            $total = $order->grand_total;
+    
+            return $this->usageCount() * $total;
+            // return $this->type === 'percentage'
+            //     ? ($total * $this->value / 100)
+            //     : min($this->value, $total);
         });
     }
+    
+    
     
 
     public function uniqueClientsCount(): int
     {
-        return $this->carts()->distinct('user_id')->count('user_id');
+        return $this->orders()->distinct('user_id')->count('user_id');
     }
 }
