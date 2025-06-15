@@ -76,14 +76,7 @@ class Coupon extends Model
 
     public function totalDiscountAmount(): float
     {
-        return $this->orders->sum(function ($order) {
-            $total = $order->grand_total;
-    
-            return $this->usageCount() * $total;
-            // return $this->type === 'percentage'
-            //     ? ($total * $this->value / 100)
-            //     : min($this->value, $total);
-        });
+        return $this->orders()->sum('grand_total');
     }
     
     
