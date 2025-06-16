@@ -13,16 +13,13 @@ class CurrencyMiddleware
 {
     public function handle(Request $request, Closure $next)
     {
-        // dd(session()->all());
         // Step 1: Check if user manually selected a currency
         if ($request->has('currency')) {
-            Log::info('Currency', ['currency' => $request->currency]);
             $this->setCurrencySession($request->currency);
         }
 
         // Step 2: If currency not set, auto-detect from IP or fallback to default
         if (!session()->has('currency')) {
-            Log::info('Currency not set, auto-detecting from IP');
             $this->detectCurrencyByIP();
         }
 
@@ -35,6 +32,8 @@ class CurrencyMiddleware
     private function setCurrencySession($currencyCode, $countryCode = null, $flag = null)
     {
         $currency = Currency::where('code', $currencyCode)->first();
+
+        Log::info('currency' , [$currency]);
 
         if ($currency) {
             session([
