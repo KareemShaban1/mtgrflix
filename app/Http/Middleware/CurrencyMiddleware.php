@@ -70,6 +70,11 @@ class CurrencyMiddleware
             // $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}", [
             //     'apiKey' => env('IPWHOIS_API_KEY', 'kQW5BwkJcHhrG9mS'),
             // ]);
+            Log::info('Requesting IPWhois URL', [
+                'url' => "https://ipwho.is/{$ip}",
+                'params' => ['apiKey' => config('services.ipwhois.key')],
+            ]);
+            
             $response = Http::timeout(10)->
             get("https://ipwhois.app/json/{$ip}",[
                 'apiKey' => config('services.ipwhois.key'),
