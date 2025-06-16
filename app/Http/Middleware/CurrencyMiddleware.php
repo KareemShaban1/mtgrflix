@@ -33,7 +33,7 @@ class CurrencyMiddleware
     {
         $currency = Currency::where('code', $currencyCode)->first();
 
-        Log::info('currency' , [$currency]);
+        Log::info('currency' , [$currencyCode , $currency]);
 
         if ($currency) {
             session([
