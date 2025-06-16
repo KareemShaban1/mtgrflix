@@ -61,17 +61,25 @@
                                        
                                         <ul class="dropdown-menu country-list" aria-labelledby="countryDropdown"
                                             style="max-height: 200px; overflow-y: auto;">
-                                            @foreach ($countries as $country)
-                                            <li>
-                                                <a class="dropdown-item {{ session('currency') == $country->currency ? 'active' : '' }}"
-                                                    href="#" data-code="+{{ $country->code }}"
-                                                    data-flag="{{ $country->flag }}">
-                                                    {!! $country->flag !!} 
-                                                    {{ $country->name }}
-                                                    (+{{ $country->code }})
-                                                </a>
-                                            </li>
-                                            @endforeach
+                                            @php $activeSet = false; @endphp
+
+@foreach ($countries as $country)
+    @php
+        $isActive = !$activeSet && session('country') == $country->code;
+    @endphp
+
+    <li>
+        <a class="dropdown-item {{ $isActive ? 'active' : '' }}"
+           href="#" data-code="+{{ $country->code }}"
+           data-flag="{{ $country->flag }}">
+            {!! $country->flag !!} {{ $country->name }} (+{{ $country->code }})
+        </a>
+    </li>
+
+    @if ($isActive)
+        @php $activeSet = true; @endphp
+    @endif
+@endforeach
 
                                         </ul>
 

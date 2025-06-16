@@ -11,246 +11,83 @@ use Illuminate\Support\Facades\Log;
 
 class CurrencyMiddleware
 {
-
-    private array $currencyToCountryMap = [
-        // Middle East & Africa
-        'AED' => 'ARE',
-        'BHD' => 'BHR',
-        'DZD' => 'DZA',
-        'EGP' => 'EGY',
-        'IQD' => 'IRQ',
-        'JOD' => 'JOR',
-        'KWD' => 'KWT',
-        'LYD' => 'LBY',
-        'MAD' => 'MAR',
-        'OMR' => 'OMN',
-        'QAR' => 'QAT',
-        'SAR' => 'SAU',
-        'SDG' => 'SDN',
-        'TND' => 'TUN',
-        'YER' => 'YEM',
-        'ZAR' => 'ZAF',
-    
-        // Asia
-        'CNY' => 'CHN',
-        'INR' => 'IND',
-        'JPY' => 'JPN',
-        'MYR' => 'MYS',
-        'PKR' => 'PAK',
-        'THB' => 'THA',
-        'TRY' => 'TUR',
-        'IDR' => 'IDN',
-        'BDT' => 'BGD',
-        'KHR' => 'KHM',
-        'MMK' => 'MMR',
-        'NPR' => 'NPL',
-        'PHP' => 'PHL',
-        'LKR' => 'LKA',
-        'VND' => 'VNM',
-    
-        // Europe
-        'EUR' => 'EU',     // Generalized for Eurozone
-        'GBP' => 'GBR',
-        'CHF' => 'CHE',
-        'SEK' => 'SWE',
-        'NOK' => 'NOR',
-        'DKK' => 'DNK',
-        'RUB' => 'RUS',
-        'HUF' => 'HUN',
-        'PLN' => 'POL',
-        'RON' => 'ROU',
-        'UAH' => 'UKR',
-    
-        // Americas
-        'USD' => 'USA',
-        'CAD' => 'CAN',
-        'BRL' => 'BRA',
-        'MXN' => 'MEX',
-        'ARS' => 'ARG',
-        'CLP' => 'CHL',
-        'COP' => 'COL',
-        'PEN' => 'PER',
-        'GTQ' => 'GTM',
-    
-        // Oceania
-        'AUD' => 'AUS',
-        'NZD' => 'NZL',
-        'FJD' => 'FJI',
-        'PGK' => 'PNG',
-    
-        // Africa (Extra)
-        'ETB' => 'ETH',
-        'GHS' => 'GHA',
-        'KES' => 'KEN',
-        'NGN' => 'NGA',
-        'RWF' => 'RWA',
-    
-        // Special / Multi-country
-        'XOF' => 'XOF', // West African CFA Franc — used in several countries
-        'XPF' => 'XPF', // CFP Franc — used in French territories
-    ];
-    
-
     public function handle(Request $request, Closure $next)
     {
         // dd(session()->all());
+        // Step 1: Check if user manually selected a currency
         if ($request->has('currency')) {
-            Log::info('Currency manually selected', ['currency' => $request->currency]);
-            session()->forget('currency');
-            $this->setCurrencySession($request->currency, $request->code);
+            Log::info('Currency', ['currency' => $request->currency]);
+            $this->setCurrencySession($request->currency);
         }
 
+        // Step 2: If currency not set, auto-detect from IP or fallback to default
         if (!session()->has('currency')) {
-            Log::info('Attempting currency auto-detection from IP');
+            Log::info('Currency not set, auto-detecting from IP');
             $this->detectCurrencyByIP();
         }
 
-        if (!session()->has('country') || !session()->has('calling_code')) {
-            $this->setCurrencySession(session('currency'));
-        }  
-        
-
+        // Step 3: Make currency available to all views
         view()->share('currentCurrency', session('currency'));
+
         return $next($request);
     }
 
-    private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
+    private function setCurrencySession($currencyCode, $countryCode = null, $flag = null)
     {
         $currency = Currency::where('code', $currencyCode)->first();
-        $countryCodeMapiing = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
-        $country = Country::where('currency',$currencyCode)->first();
 
-
-        // dd($callingCode);
         if ($currency) {
             session([
-                'currency' => $currency->code,
-                'rate'     => $currency->exchange_rate,
-                'symbol'   => $currency->symbol,
-                'country'  => $countryCodeMapiing,
-                'flag'     => $country->flag,
-                'calling_code' => $country->code,
+                'currency' => $currency->code ?? 'SAR',
+                'rate'     => $currency->exchange_rate ?? 1,
+                'symbol'   => $currency->symbol ?? 'SAR',
+                'country'  => $countryCode ?? '966',
+                'flag'     => $flag ?? '🇸🇦',
             ]);
         } else {
-            Log::warning("Currency '{$currencyCode}' not found. Using fallback SAR.");
             session([
-                'currency' => 'SAR',
-                'rate'     => 1,
-                'symbol'   => 'SAR',
-                'country'  => 'SAU',
-                'flag'     => $country->flag,
-                'calling_code' => $country->code,
+                'currency' => $currency->code ?? 'SAR',
+                'rate'     => $currency->exchange_rate ?? 1,
+                'symbol'   => $currency->symbol ?? 'SAR',
+                'country'  => $countryCode ?? '966',
+                'flag'     => $flag ?? '🇸🇦'
             ]);
+            Log::warning("Currency code '{$currencyCode}' not found in database.");
         }
     }
 
     private function detectCurrencyByIP()
     {
-        $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
-        Log::info('Client IP detected', ['ip' => $ip]);
-    
-        if (
-            $this->tryIpWhois($ip) ||
-            $this->tryIpWho($ip) ||
-            $this->tryIpApiCo($ip) ||
-            $this->tryIpInfo($ip)
-        ) {
-            return;
-        }
-    
-        // All failed, fallback
-        Log::info('All IP services failed. Falling back to SAR.');
-        $this->setCurrencySession('SAR', '966', '🇸🇦');
-    }
-    
-    private function tryIpWhois($ip): bool
-    {
+
         try {
+            $ip = request()->ip(); // Use '127.0.0.1' for local testing
+            // $response = Http::timeout(3)->get("https://ipwho.is/{$ip}");
             $apiKey = config('services.ipwhois.key');
             $response = Http::timeout(10)->get("https://ipwhois.pro/{$ip}?key={$apiKey}");
-            $data = $response->json();
-            Log::info('ipwhois.app response', $data);
-    
-            if (!empty($data['success']) && $data['success'] === false) {
-                throw new \Exception($data['message'] ?? 'ipwhois.app failed');
-            }
-    
-            return $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
-        } catch (\Exception $e) {
-            Log::warning('ipwhois.app failed', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
-    
-    private function tryIpWho($ip): bool
-    {
-        try {
-            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
-            $data = $response->json();
-            Log::info('ipwho.is response', $data);
-    
-            if (!empty($data['success'])) {
-                return $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
-            }
-            return false;
-        } catch (\Exception $e) {
-            Log::warning('ipwho.is failed', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
-    
-    private function tryIpApiCo($ip): bool
-    {
-        try {
-            $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
-            $data = $response->json();
-            Log::info('ipapi.co response', $data);
-    
-            if (!isset($data['error'])) {
-                return $this->handleCurrencyDetection($data['country_calling_code'] ?? null, '🇸🇦');
-            }
-            return false;
-        } catch (\Exception $e) {
-            Log::warning('ipapi.co failed', ['error' => $e->getMessage()]);
-            return false;
-        }
-    }
-    
-    private function tryIpInfo($ip): bool
-    {
-        try {
-            $response = Http::timeout(10)->get("https://ipinfo.io/{$ip}/json");
-            $data = $response->json();
-            Log::info('ipinfo.io response', $data);
-    
-            $countryCode = $data['country'] ?? null;
-            if ($countryCode) {
-                $country = Country::where('alpha2', $countryCode)->orWhere('alpha3', $countryCode)->first();
-                if ($country && $country->currency) {
-                    $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
-                    return true;
+            Log::info('response' , [$response->json()]);
+            if ($response->ok()) {
+                $data = $response->json();
+
+                if (!empty($data['calling_code'])) {
+                    $callingCode = $data['calling_code'];
+
+                    $country = Country::where('code', $callingCode)->first();
+
+                    if ($country && $country->currency) {
+                        $this->setCurrencySession($country->currency, $callingCode, $country->flag);
+                        return;
+                    } else {
+                        $this->setCurrencySession('SAR', '966', '🇸🇦');
+                        return;
+                    }
                 }
             }
-            return false;
+
+            // Fallback to SAR if detection fails
+            $this->setCurrencySession('SAR', '966');
         } catch (\Exception $e) {
-            Log::warning('ipinfo.io failed', ['error' => $e->getMessage()]);
-            return false;
+            Log::error('Currency detection failed: ' . $e->getMessage());
+            $this->setCurrencySession('SAR', '966', '🇸🇦');
         }
     }
-    
-    private function handleCurrencyDetection(?string $callingCode, string $flag): bool
-    {
-        if ($callingCode) {
-            $normalizedCode = preg_replace('/[^0-9]/', '', $callingCode);
-            $country = Country::where('code', $normalizedCode)->first();
-            if ($country && $country->currency) {
-                $this->setCurrencySession($country->currency, $normalizedCode, $country->flag ?? $flag);
-                return true;
-            }
-        }
-    
-        Log::warning('Calling code not found or no matching country.');
-        return false;
-    }
-    
 }
