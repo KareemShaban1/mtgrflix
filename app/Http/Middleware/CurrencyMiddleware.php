@@ -53,6 +53,7 @@ class CurrencyMiddleware
             ]);
             Log::warning("Currency code '{$currencyCode}' not found in database.");
         }
+        Log::info('session' , session()->all());
     }
 
     private function detectCurrencyByIP()
