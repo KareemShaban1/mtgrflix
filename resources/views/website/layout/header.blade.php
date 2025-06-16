@@ -61,22 +61,17 @@
                                        
                                         <ul class="dropdown-menu country-list" aria-labelledby="countryDropdown"
                                             style="max-height: 200px; overflow-y: auto;">
-                                            @php $shown = false; @endphp
-
                                             @foreach ($countries as $country)
-                                                @if (!$shown && session('currency') == $country->currency)
-                                                    <li>
-                                                        <a class="dropdown-item active"
-                                                        href="#" data-code="+{{ $country->code }}"
-                                                        data-flag="{{ $country->flag }}">
-                                                            {!! $country->flag !!}
-                                                            {{ $country->name }} (+{{ $country->code }})
-                                                        </a>
-                                                    </li>
-                                                    @php $shown = true; @endphp
-                                                @endif
+                                            <li>
+                                                <a class="dropdown-item {{ session('currency') == $country->currency ? 'active' : '' }}"
+                                                    href="#" data-code="+{{ $country->code }}"
+                                                    data-flag="{{ $country->flag }}">
+                                                    {!! $country->flag !!} 
+                                                    {{ $country->name }}
+                                                    (+{{ $country->code }})
+                                                </a>
+                                            </li>
                                             @endforeach
-
 
                                         </ul>
 
