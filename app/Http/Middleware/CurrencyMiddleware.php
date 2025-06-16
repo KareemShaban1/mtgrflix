@@ -64,8 +64,11 @@ class CurrencyMiddleware
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
             Log::info('IP detection result:', ['ip' => $ip]);
             // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}?apiKey=kQW5BwkJcHhrG9mS");
-            $response = Http::timeout(10)->get("https://ipwhois.io/{$ip}", [
-                'apiKey' => env('IPWHOIS_API_KEY', 'kQW5BwkJcHhrG9mS')  // or your actual key
+            // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}", [
+            //     'apiKey' => env('IPWHOIS_API_KEY', 'kQW5BwkJcHhrG9mS')  // or your actual key
+            // ]);
+            $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}", [
+                'apiKey' => env('IPWHOIS_API_KEY', 'kQW5BwkJcHhrG9mS'),
             ]);
             
 
