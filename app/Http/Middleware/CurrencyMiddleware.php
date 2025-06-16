@@ -87,7 +87,7 @@ class CurrencyMiddleware
     {
         try {
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
-            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
+            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}?apiKey=kQW5BwkJcHhrG9mS");
 
             if ($response->ok()) {
                 $data = $response->json();
@@ -95,6 +95,7 @@ class CurrencyMiddleware
                 $flag = $data['flag']['emoji'] ?? '🇸🇦';
 
                 Log::info('IP detection result:', ['calling_code' => $callingCode]);
+                Log::info('ip data', [$data]);
 
                 if ($callingCode) {
                     $country = Country::where('code', $callingCode)->first();
