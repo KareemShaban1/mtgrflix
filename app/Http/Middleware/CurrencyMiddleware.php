@@ -11,29 +11,6 @@ use Illuminate\Support\Facades\Log;
 
 class CurrencyMiddleware
 {
-    // Mapping of calling codes to ISO 3166-1 alpha-3 codes
-     // Mapping of ISO 3166-1 alpha-3 country codes to currency codes
-     private array $currencyToCountryMap = [
-        'SAR' => 'SAU',
-        'EGP' => 'EGY',
-        'AED' => 'ARE',
-        'QAR' => 'QAT',
-        'USD' => 'USA',
-        'GBP' => 'GBR',
-        'KWD' => 'KWT',
-        'JOD' => 'JOR',
-        'SYP' => 'SYR',
-        'LBP' => 'LBN',
-        'TND' => 'TUN',
-        'MAD' => 'MAR',
-        'DZD' => 'DZA',
-        'SDG' => 'SDN',
-        'BHD' => 'BHR',
-        'IQD' => 'IRQ',
-        'YER' => 'YEM',
-        // Add more mappings if needed
-    ];
-    
 
 
     public function handle(Request $request, Closure $next)
@@ -60,7 +37,6 @@ class CurrencyMiddleware
     private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
     {
         $currency = Currency::where('code', $currencyCode)->first();
-        $countryAlpha3 = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
 
         // dd($currencyCode, $callingCode ,$countryAlpha3);
         if ($currency) {
@@ -68,7 +44,6 @@ class CurrencyMiddleware
                 'currency' => $currency->code,
                 'rate'     => $currency->exchange_rate,
                 'symbol'   => $currency->symbol,
-                'country'  => $countryAlpha3,
                 'flag'     => $flag,
             ]);
         } else {
@@ -88,7 +63,7 @@ class CurrencyMiddleware
         try {
             $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
             // $response = Http::timeout(10)->get("https://ipwho.is/{$ip}?apiKey=kQW5BwkJcHhrG9mS");
-            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}", [
+            $response = Http::timeout(10)->get("https://ipwhois.io/{$ip}", [
                 'apiKey' => env('IPWHOIS_API_KEY', 'kQW5BwkJcHhrG9mS')  // or your actual key
             ]);
             
