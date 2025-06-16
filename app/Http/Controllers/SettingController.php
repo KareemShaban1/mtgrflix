@@ -10,43 +10,43 @@ use Illuminate\Support\Facades\Http;
 
 class SettingController extends Controller
 {
-    // public function setCurrency(Request $request)
-    // {
-    //     $currency = Currency::where('code', $request->currency)->first();
-    //     $country = Country::where('currency', $currency->code)->first();
-    //     if ($currency) {
-    //         session([
-    //             'currency' => $currency->code,
-    //             'rate' => $currency->exchange_rate,
-    //             'symbol' => $currency->symbol,
-    //             // 'country'  => $country->code ?? '966',
-    //         ]);
-
-    //         return response()->json(['success' => true]);
-    //     }
-
-    //     return response()->json(['success' => false], 400);
-    // }
-
     public function setCurrency(Request $request)
     {
-        session()->forget('currency'); // Clear old one if needed
-
-        $currencyCode = $request->input('currency');
-        $currency = Currency::where('code', $currencyCode)->first();
-
+        $currency = Currency::where('code', $request->currency)->first();
+        $country = Country::where('currency', $currency->code)->first();
         if ($currency) {
             session([
                 'currency' => $currency->code,
-                'rate'     => $currency->exchange_rate,
-                'symbol'   => $currency->symbol,
+                'rate' => $currency->exchange_rate,
+                'symbol' => $currency->symbol,
+                'country'  => $country->code ?? '966',
             ]);
 
             return response()->json(['success' => true]);
         }
 
-        return response()->json(['success' => false, 'message' => 'Currency not found'], 404);
+        return response()->json(['success' => false], 400);
     }
+
+    // public function setCurrency(Request $request)
+    // {
+    //     session()->forget('currency'); // Clear old one if needed
+
+    //     $currencyCode = $request->input('currency');
+    //     $currency = Currency::where('code', $currencyCode)->first();
+
+    //     if ($currency) {
+    //         session([
+    //             'currency' => $currency->code,
+    //             'rate'     => $currency->exchange_rate,
+    //             'symbol'   => $currency->symbol,
+    //         ]);
+
+    //         return response()->json(['success' => true]);
+    //     }
+
+    //     return response()->json(['success' => false, 'message' => 'Currency not found'], 404);
+    // }
 
     public function callback2()
     {
