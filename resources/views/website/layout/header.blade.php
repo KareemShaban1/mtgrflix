@@ -480,7 +480,8 @@
 
                         @foreach ($currencies as $currency)
                         <li>
-                            <a class="dropdown-item" href="#" data-currency="{{ $currency->code }}">
+                            <a class="dropdown-item" href="#" data-currency="{{ $currency->code }}"
+                            data-code="{{ $currency->code }}">
                                 {{ $currency->name }}
                                 ({{ $currency->code }})
                             </a>
