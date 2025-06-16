@@ -56,7 +56,7 @@ class CurrencyMiddleware
         $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
         Log::info('Client IP detected', ['ip' => $ip]);
 
-        // Step 1: Try ipwhois.app
+        // 1. ipwhois.app
         try {
             $apiKey = config('services.ipwhois.key');
             $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}?apikey={$apiKey}");
@@ -67,29 +67,38 @@ class CurrencyMiddleware
                 throw new \Exception($data['message'] ?? 'ipwhois.app failed');
             }
 
-            $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
-            return;
-
+            return $this->handleCurrencyDetection($data['country_phone'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
         } catch (\Exception $e) {
             Log::warning('ipwhois.app failed', ['error' => $e->getMessage()]);
         }
 
-        // Step 2: Try ipwho.is
+        // 2. ipwho.is
         try {
             $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
             $data = $response->json();
             Log::info('ipwho.is response', $data);
 
             if (!empty($data['success'])) {
-                $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
-                return;
+                return $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
             }
-
         } catch (\Exception $e) {
             Log::warning('ipwho.is failed', ['error' => $e->getMessage()]);
         }
 
-        // Step 3: Try ipinfo.io
+        // 3. ipapi.co
+        try {
+            $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
+            $data = $response->json();
+            Log::info('ipapi.co response', $data);
+
+            if (!isset($data['error'])) {
+                return $this->handleCurrencyDetection($data['country_calling_code'] ?? null, '🇸🇦');
+            }
+        } catch (\Exception $e) {
+            Log::warning('ipapi.co failed', ['error' => $e->getMessage()]);
+        }
+
+        // 4. ipinfo.io
         try {
             $response = Http::timeout(10)->get("https://ipinfo.io/{$ip}/json");
             $data = $response->json();
@@ -99,11 +108,9 @@ class CurrencyMiddleware
             if ($countryCode) {
                 $country = Country::where('alpha2', $countryCode)->orWhere('alpha3', $countryCode)->first();
                 if ($country && $country->currency) {
-                    $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
-                    return;
+                    return $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
                 }
             }
-
         } catch (\Exception $e) {
             Log::warning('ipinfo.io failed', ['error' => $e->getMessage()]);
         }
@@ -116,9 +123,10 @@ class CurrencyMiddleware
     private function handleCurrencyDetection(?string $callingCode, string $flag)
     {
         if ($callingCode) {
-            $country = Country::where('code', $callingCode)->first();
+            $normalizedCode = preg_replace('/[^0-9]/', '', $callingCode);
+            $country = Country::where('code', $normalizedCode)->first();
             if ($country && $country->currency) {
-                $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? $flag);
+                $this->setCurrencySession($country->currency, $normalizedCode, $country->flag ?? $flag);
                 return;
             }
         }
