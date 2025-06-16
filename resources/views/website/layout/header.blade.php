@@ -46,6 +46,7 @@
                                 <h5 class="mb-3 mt-2">{{ __('site.login') }} </h5>
                                 <p class="text-dark"> {{ __('site.enter_login_to_proceed') }} </p>
 
+                                
                                 <div class="mb-3 d-flex">
                                     <input type="tel" class="form-control text-center flex-grow-1"
                                         id="phoneInput" placeholder="أدخل رقم هاتفك" required name="phone">
@@ -54,16 +55,19 @@
                                             type="button" id="countryDropdown" data-bs-toggle="dropdown"
                                             aria-expanded="false">
                                             <span id="selectedFlag">{{ session('flag', '🇸🇦') }}</span>
-                                            <span id="selectedCode">+{{ session('country', '966') }}</span>
+                                            <span id="selectedCode">+{{ session('calling_code', '966') }}</span>
+                                            <!-- <span id="selectedCurrency">{{ session('currency', 'SAR') }}</span> -->
                                         </button>
+                                       
                                         <ul class="dropdown-menu country-list" aria-labelledby="countryDropdown"
                                             style="max-height: 200px; overflow-y: auto;">
                                             @foreach ($countries as $country)
                                             <li>
-                                                <a class="dropdown-item {{ session('country') == $country->code ? 'active' : '' }}"
+                                                <a class="dropdown-item {{ session('currency') == $country->currency ? 'active' : '' }}"
                                                     href="#" data-code="+{{ $country->code }}"
                                                     data-flag="{{ $country->flag }}">
-                                                    {!! $country->flag !!} {{ $country->name }}
+                                                    {!! $country->flag !!} 
+                                                    {{ $country->name }}
                                                     (+{{ $country->code }})
                                                 </a>
                                             </li>

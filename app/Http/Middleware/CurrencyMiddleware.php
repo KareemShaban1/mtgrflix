@@ -13,29 +13,87 @@ class CurrencyMiddleware
 {
 
     private array $currencyToCountryMap = [
-        'SAR' => 'SAU',
-        'EGP' => 'EGY',
+        // Middle East & Africa
         'AED' => 'ARE',
-        'QAR' => 'QAT',
-        'USD' => 'USA',
-        'GBP' => 'GBR',
-        'KWD' => 'KWT',
-        'JOD' => 'JOR',
-        'SYP' => 'SYR',
-        'LBP' => 'LBN',
-        'TND' => 'TUN',
-        'MAD' => 'MAR',
-        'DZD' => 'DZA',
-        'SDG' => 'SDN',
         'BHD' => 'BHR',
+        'DZD' => 'DZA',
+        'EGP' => 'EGY',
         'IQD' => 'IRQ',
+        'JOD' => 'JOR',
+        'KWD' => 'KWT',
+        'LYD' => 'LBY',
+        'MAD' => 'MAR',
+        'OMR' => 'OMN',
+        'QAR' => 'QAT',
+        'SAR' => 'SAU',
+        'SDG' => 'SDN',
+        'TND' => 'TUN',
         'YER' => 'YEM',
-        // Add more mappings if needed
+        'ZAR' => 'ZAF',
+    
+        // Asia
+        'CNY' => 'CHN',
+        'INR' => 'IND',
+        'JPY' => 'JPN',
+        'MYR' => 'MYS',
+        'PKR' => 'PAK',
+        'THB' => 'THA',
+        'TRY' => 'TUR',
+        'IDR' => 'IDN',
+        'BDT' => 'BGD',
+        'KHR' => 'KHM',
+        'MMK' => 'MMR',
+        'NPR' => 'NPL',
+        'PHP' => 'PHL',
+        'LKR' => 'LKA',
+        'VND' => 'VNM',
+    
+        // Europe
+        'EUR' => 'EU',     // Generalized for Eurozone
+        'GBP' => 'GBR',
+        'CHF' => 'CHE',
+        'SEK' => 'SWE',
+        'NOK' => 'NOR',
+        'DKK' => 'DNK',
+        'RUB' => 'RUS',
+        'HUF' => 'HUN',
+        'PLN' => 'POL',
+        'RON' => 'ROU',
+        'UAH' => 'UKR',
+    
+        // Americas
+        'USD' => 'USA',
+        'CAD' => 'CAN',
+        'BRL' => 'BRA',
+        'MXN' => 'MEX',
+        'ARS' => 'ARG',
+        'CLP' => 'CHL',
+        'COP' => 'COL',
+        'PEN' => 'PER',
+        'GTQ' => 'GTM',
+    
+        // Oceania
+        'AUD' => 'AUS',
+        'NZD' => 'NZL',
+        'FJD' => 'FJI',
+        'PGK' => 'PNG',
+    
+        // Africa (Extra)
+        'ETB' => 'ETH',
+        'GHS' => 'GHA',
+        'KES' => 'KEN',
+        'NGN' => 'NGA',
+        'RWF' => 'RWA',
+    
+        // Special / Multi-country
+        'XOF' => 'XOF', // West African CFA Franc — used in several countries
+        'XPF' => 'XPF', // CFP Franc — used in French territories
     ];
-
+    
 
     public function handle(Request $request, Closure $next)
     {
+        // dd(session()->all());
         if ($request->has('currency')) {
             Log::info('Currency manually selected', ['currency' => $request->currency]);
             session()->forget('currency');
@@ -47,7 +105,7 @@ class CurrencyMiddleware
             $this->detectCurrencyByIP();
         }
 
-        if (!session()->has('country')) {
+        if (!session()->has('country') || !session()->has('calling_code')) {
             $this->setCurrencySession(session('currency'));
         }  
         
@@ -59,16 +117,19 @@ class CurrencyMiddleware
     private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
     {
         $currency = Currency::where('code', $currencyCode)->first();
-        $country = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
+        $countryCodeMapiing = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
+        $country = Country::where('currency',$currencyCode)->first();
 
 
+        // dd($callingCode);
         if ($currency) {
             session([
                 'currency' => $currency->code,
                 'rate'     => $currency->exchange_rate,
                 'symbol'   => $currency->symbol,
-                'country'  => $country,
-                'flag'     => $flag,
+                'country'  => $countryCodeMapiing,
+                'flag'     => $country->flag,
+                'calling_code' => $country->code,
             ]);
         } else {
             Log::warning("Currency '{$currencyCode}' not found. Using fallback SAR.");
@@ -77,7 +138,8 @@ class CurrencyMiddleware
                 'rate'     => 1,
                 'symbol'   => 'SAR',
                 'country'  => 'SAU',
-                'flag'     => $flag,
+                'flag'     => $country->flag,
+                'calling_code' => $country->code,
             ]);
         }
     }
