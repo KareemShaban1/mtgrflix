@@ -31,6 +31,7 @@ class CurrencyMiddleware
     private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
     {
         $currency = Currency::where('code', $currencyCode)->first();
+
         if ($currency) {
             session([
                 'currency' => $currency->code,
@@ -55,60 +56,74 @@ class CurrencyMiddleware
         $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
         Log::info('Client IP detected', ['ip' => $ip]);
 
-        // Try primary IPWhois API
+        // Step 1: Try ipwhois.app
         try {
             $apiKey = config('services.ipwhois.key');
             $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}?apikey={$apiKey}");
-
             $data = $response->json();
-            Log::info('IPWhois API response', $data);
+            Log::info('ipwhois.app response', $data);
 
             if (!empty($data['success']) && $data['success'] === false) {
-                throw new \Exception($data['message'] ?? 'IPWhois API failed');
+                throw new \Exception($data['message'] ?? 'ipwhois.app failed');
             }
 
-            $callingCode = $data['calling_code'] ?? null;
-            $flag = $data['flag']['emoji'] ?? '🇸🇦';
+            $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
+            return;
 
-            if ($callingCode) {
-                $country = Country::where('code', $callingCode)->first();
+        } catch (\Exception $e) {
+            Log::warning('ipwhois.app failed', ['error' => $e->getMessage()]);
+        }
+
+        // Step 2: Try ipwho.is
+        try {
+            $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
+            $data = $response->json();
+            Log::info('ipwho.is response', $data);
+
+            if (!empty($data['success'])) {
+                $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
+                return;
+            }
+
+        } catch (\Exception $e) {
+            Log::warning('ipwho.is failed', ['error' => $e->getMessage()]);
+        }
+
+        // Step 3: Try ipinfo.io
+        try {
+            $response = Http::timeout(10)->get("https://ipinfo.io/{$ip}/json");
+            $data = $response->json();
+            Log::info('ipinfo.io response', $data);
+
+            $countryCode = $data['country'] ?? null;
+            if ($countryCode) {
+                $country = Country::where('alpha2', $countryCode)->orWhere('alpha3', $countryCode)->first();
                 if ($country && $country->currency) {
-                    $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? $flag);
+                    $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
                     return;
                 }
             }
 
         } catch (\Exception $e) {
-            Log::warning('IPWhois API failed, trying fallback', ['error' => $e->getMessage()]);
+            Log::warning('ipinfo.io failed', ['error' => $e->getMessage()]);
         }
 
-        // Fallback to ipwho.is (free, no API key)
-        try {
-            $fallbackResponse = Http::timeout(10)->get("https://ipwho.is/{$ip}");
-            $fallbackData = $fallbackResponse->json();
-            Log::info('Fallback ipwho.is response', $fallbackData);
-
-            if (!empty($fallbackData['success'])) {
-                $callingCode = $fallbackData['calling_code'] ?? null;
-                $flag = $fallbackData['flag']['emoji'] ?? '🇸🇦';
-
-                if ($callingCode) {
-                    $country = Country::where('code', $callingCode)->first();
-                    if ($country && $country->currency) {
-                        $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? $flag);
-                        return;
-                    }
-                }
-            } else {
-                Log::warning('ipwho.is fallback failed', ['data' => $fallbackData]);
-            }
-
-        } catch (\Exception $ex) {
-            Log::error('ipwho.is fallback exception', ['error' => $ex->getMessage()]);
-        }
-
-        // Final fallback
+        // Fallback
         Log::info('Currency detection failed. Falling back to SAR.');
         $this->setCurrencySession('SAR', '966', '🇸🇦');
+    }
+
+    private function handleCurrencyDetection(?string $callingCode, string $flag)
+    {
+        if ($callingCode) {
+            $country = Country::where('code', $callingCode)->first();
+            if ($country && $country->currency) {
+                $this->setCurrencySession($country->currency, $callingCode, $country->flag ?? $flag);
+                return;
+            }
+        }
+
+        Log::warning('Calling code not found or no matching country. Falling back to SAR.');
+        $this->setCurrencySession('SAR', '966', $flag);
     }
 }
