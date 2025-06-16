@@ -1,4 +1,6 @@
+@if(isset($description) && $description != '')
 <meta name="description" content="{{ $description }}">
+@endif
 @yield('meta_description')
 <meta name="keywords" content="{{ $keywords }}">
 <meta name="author" content="{{ $author }}">

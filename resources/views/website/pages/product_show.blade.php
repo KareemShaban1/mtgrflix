@@ -8,6 +8,22 @@
 @if (isset($product->description_seo))
 <meta name="description" content="{{ $product->description_seo }}">
 @endif
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org/",
+  "@type": "Product",
+  "name": "{{ $product->name }}",
+  "image": [
+    "{{ asset('storage/' . $product->images) }}"
+  ],
+  "description": "{{ Str::limit(strip_tags($product->description_seo), 150) }}",
+  "aggregateRating": {
+    "@type": "AggregateRating",
+    "ratingValue": "{{ $averageRating }}",
+    "reviewCount": "{{ $reviewsCount }}"
+  }
+}
+</script>
 @endsection
 
 @section('content')
@@ -264,3 +280,4 @@
             </div>
         </div>
 @endsection
+
