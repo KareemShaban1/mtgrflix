@@ -55,83 +55,109 @@ class CurrencyMiddleware
     {
         $ip = app()->environment('local') ? env('FAKE_IP', '197.121.246.12') : request()->ip();
         Log::info('Client IP detected', ['ip' => $ip]);
-
-        // 1. ipwhois.app
+    
+        if (
+            $this->tryIpWhois($ip) ||
+            $this->tryIpWho($ip) ||
+            $this->tryIpApiCo($ip) ||
+            $this->tryIpInfo($ip)
+        ) {
+            return;
+        }
+    
+        // All failed, fallback
+        Log::info('All IP services failed. Falling back to SAR.');
+        $this->setCurrencySession('SAR', '966', '🇸🇦');
+    }
+    
+    private function tryIpWhois($ip): bool
+    {
         try {
             $apiKey = config('services.ipwhois.key');
             $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}?apikey={$apiKey}");
             $data = $response->json();
             Log::info('ipwhois.app response', $data);
-
+    
             if (!empty($data['success']) && $data['success'] === false) {
                 throw new \Exception($data['message'] ?? 'ipwhois.app failed');
             }
-
-            return $this->handleCurrencyDetection($data['country_phone'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
+    
+            return $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
         } catch (\Exception $e) {
             Log::warning('ipwhois.app failed', ['error' => $e->getMessage()]);
+            return false;
         }
-
-        // 2. ipwho.is
+    }
+    
+    private function tryIpWho($ip): bool
+    {
         try {
             $response = Http::timeout(10)->get("https://ipwho.is/{$ip}");
             $data = $response->json();
             Log::info('ipwho.is response', $data);
-
+    
             if (!empty($data['success'])) {
                 return $this->handleCurrencyDetection($data['calling_code'] ?? null, $data['flag']['emoji'] ?? '🇸🇦');
             }
+            return false;
         } catch (\Exception $e) {
             Log::warning('ipwho.is failed', ['error' => $e->getMessage()]);
+            return false;
         }
-
-        // 3. ipapi.co
+    }
+    
+    private function tryIpApiCo($ip): bool
+    {
         try {
             $response = Http::timeout(10)->get("https://ipapi.co/{$ip}/json/");
             $data = $response->json();
             Log::info('ipapi.co response', $data);
-
+    
             if (!isset($data['error'])) {
                 return $this->handleCurrencyDetection($data['country_calling_code'] ?? null, '🇸🇦');
             }
+            return false;
         } catch (\Exception $e) {
             Log::warning('ipapi.co failed', ['error' => $e->getMessage()]);
+            return false;
         }
-
-        // 4. ipinfo.io
+    }
+    
+    private function tryIpInfo($ip): bool
+    {
         try {
             $response = Http::timeout(10)->get("https://ipinfo.io/{$ip}/json");
             $data = $response->json();
             Log::info('ipinfo.io response', $data);
-
+    
             $countryCode = $data['country'] ?? null;
             if ($countryCode) {
                 $country = Country::where('alpha2', $countryCode)->orWhere('alpha3', $countryCode)->first();
                 if ($country && $country->currency) {
-                    return $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
+                    $this->setCurrencySession($country->currency, $country->code, $country->flag ?? '🇸🇦');
+                    return true;
                 }
             }
+            return false;
         } catch (\Exception $e) {
             Log::warning('ipinfo.io failed', ['error' => $e->getMessage()]);
+            return false;
         }
-
-        // Fallback
-        Log::info('Currency detection failed. Falling back to SAR.');
-        $this->setCurrencySession('SAR', '966', '🇸🇦');
     }
-
-    private function handleCurrencyDetection(?string $callingCode, string $flag)
+    
+    private function handleCurrencyDetection(?string $callingCode, string $flag): bool
     {
         if ($callingCode) {
             $normalizedCode = preg_replace('/[^0-9]/', '', $callingCode);
             $country = Country::where('code', $normalizedCode)->first();
             if ($country && $country->currency) {
                 $this->setCurrencySession($country->currency, $normalizedCode, $country->flag ?? $flag);
-                return;
+                return true;
             }
         }
-
-        Log::warning('Calling code not found or no matching country. Falling back to SAR.');
-        $this->setCurrencySession('SAR', '966', $flag);
+    
+        Log::warning('Calling code not found or no matching country.');
+        return false;
     }
+    
 }
