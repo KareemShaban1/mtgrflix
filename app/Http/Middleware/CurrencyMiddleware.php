@@ -11,6 +11,29 @@ use Illuminate\Support\Facades\Log;
 
 class CurrencyMiddleware
 {
+
+    private array $currencyToCountryMap = [
+        'SAR' => 'SAU',
+        'EGP' => 'EGY',
+        'AED' => 'ARE',
+        'QAR' => 'QAT',
+        'USD' => 'USA',
+        'GBP' => 'GBR',
+        'KWD' => 'KWT',
+        'JOD' => 'JOR',
+        'SYP' => 'SYR',
+        'LBP' => 'LBN',
+        'TND' => 'TUN',
+        'MAD' => 'MAR',
+        'DZD' => 'DZA',
+        'SDG' => 'SDN',
+        'BHD' => 'BHR',
+        'IQD' => 'IRQ',
+        'YER' => 'YEM',
+        // Add more mappings if needed
+    ];
+
+
     public function handle(Request $request, Closure $next)
     {
         if ($request->has('currency')) {
@@ -24,6 +47,11 @@ class CurrencyMiddleware
             $this->detectCurrencyByIP();
         }
 
+        if (!session()->has('country')) {
+            $this->setCurrencySession(session('currency'));
+        }  
+        
+
         view()->share('currentCurrency', session('currency'));
         return $next($request);
     }
@@ -31,12 +59,15 @@ class CurrencyMiddleware
     private function setCurrencySession(string $currencyCode, string $callingCode = '966', string $flag = '🇸🇦')
     {
         $currency = Currency::where('code', $currencyCode)->first();
+        $country = $this->currencyToCountryMap[$currencyCode] ?? 'SAU';
+
 
         if ($currency) {
             session([
                 'currency' => $currency->code,
                 'rate'     => $currency->exchange_rate,
                 'symbol'   => $currency->symbol,
+                'country'  => $country,
                 'flag'     => $flag,
             ]);
         } else {
@@ -74,7 +105,7 @@ class CurrencyMiddleware
     {
         try {
             $apiKey = config('services.ipwhois.key');
-            $response = Http::timeout(10)->get("https://ipwhois.app/json/{$ip}?apikey={$apiKey}");
+            $response = Http::timeout(10)->get("https://ipwhois.pro/{$ip}?key={$apiKey}");
             $data = $response->json();
             Log::info('ipwhois.app response', $data);
     

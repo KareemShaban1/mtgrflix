@@ -40,8 +40,10 @@ class NewPaymentController extends Controller
             'Authorization' => 'Bearer ' . $api_key,
         ];
 
+
         $body = [
             "CustomerIdentifier" => auth()->user()->name,
+            "CountryCode" => session('country', 'KWT'),
         ];
 
         $client = new \GuzzleHttp\Client();

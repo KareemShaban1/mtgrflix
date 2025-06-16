@@ -142,16 +142,29 @@
         const rate = {{ session('rate', 1) }};
         const originalAmount = {{ $total }};
         const language = "{{ app()->getLocale() }}";
-
         let finalAmount = (originalAmount * rate).toFixed(2).toString();
 
-        console.log(countryCode , currencyCode , finalAmount , sessionId)
+        const currencyToCountry = {
+    'SAR': 'SAU',
+    'EGP': 'EGY',
+    'AED': 'ARE',
+    'QAR': 'QAT',
+    'USD': 'USA',
+    'KWD': 'KWT',
+    'JOD': 'JOR',
+    'GBP': 'GBR',
+    // add more if needed
+};
+
+const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallback
+
+        console.log(mappedCountry , currencyCode , finalAmount , sessionId)
         const totalEl = document.querySelector('.order-total-value');
         if (totalEl) totalEl.textContent = finalAmount;
 
         const config = {
             sessionId: sessionId,
-            countryCode: countryCode,
+            countryCode: mappedCountry,
             currencyCode: currencyCode,
             amount: finalAmount,
             callback: payment,
