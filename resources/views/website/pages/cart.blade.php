@@ -266,7 +266,7 @@
                                                                 <a class="text-decoration-none" data-bs-toggle="collapse"
                                                                     href="#couponCollapse" role="button"
                                                                     aria-expanded="false" aria-controls="couponCollapse"
-                                                                    style="color: red">
+                                                                    style="color: #0d6efd">
                                                                     {{ __('site.have_discount_code') }}
                                                                 </a>
                                                             </h6>

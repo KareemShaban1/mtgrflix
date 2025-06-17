@@ -187,9 +187,15 @@ class ViewOrder extends ViewRecord
                                     ->label(__('filament.unit_price'))
                                     ->money('SAR'),
 
-                                TextEntry::make('total_amount')
-                                    ->label(__('filament.total_price'))
+                                    TextEntry::make('order.coupon.code')
+                                    ->label(__('site.code'))
                                     ->money('SAR'),
+
+                                    TextEntry::make('order.grand_total')
+                                    ->label(__('filament.grand_total'))
+                                    ->money('SAR'),
+
+
                                 TextEntry::make('selectedCode.code')
                                     ->label(__('filament.selected_code'))
                                     // ->formatStateUsing(fn ($state) => strip_tags($state, '<strong><em><a>'))

@@ -55,7 +55,7 @@
                         <h6 class="mb-2">
                             <a class="text-decoration-none" data-bs-toggle="collapse" href="#couponCollapse" role="button"
                                 aria-expanded="{{ isset($code) && $code ? 'true' : 'false' }}"
-                                aria-controls="couponCollapse" style="color: red">
+                                aria-controls="couponCollapse" style="color: #0d6efd">
                                 {{ __('site.have_discount_code') }}
                             </a>
                         </h6>
@@ -128,11 +128,12 @@
         var currencyCode = "{{ session('currency', 1) }}";
         var amount = "{{ $total }}";
         var language = "{{ app()->getLocale() }}";
+        console.log(countryCode , currencyCode)
         console.log(amount);
         var config = {
             sessionId: sessionId,
             countryCode: countryCode,
-            currencyCode: currencyCode,
+            currencyCode: 'SAR',
             amount: amount,
             callback: payment,
             containerId: "unified-session",
