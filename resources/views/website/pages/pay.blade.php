@@ -128,11 +128,13 @@
         var currencyCode = "{{ session('currency', 1) }}";
         var amount = "{{ $total }}";
         var language = "{{ app()->getLocale() }}";
-        // console.log(countryCode , currencyCode)
-        // console.log(amount);
+        console.log(countryCode , currencyCode)
+        console.log(amount);
+        // countryCode: countryCode,
+        // currencyCode: currencyCode,
         var config = {
             sessionId: sessionId,
-            countryCode: countryCode,
+            countryCode: 'SAU',
             currencyCode: 'SAR',
             amount: amount,
             callback: payment,
