@@ -87,7 +87,13 @@ class OrderController extends Controller
 
             $cart = new CartController();
             return $cart->addToCart($productId, $optionIds);
-        } else {
+        } 
+        else {
+
+            if (!auth()->check()) {
+                return redirect()->route('login')->with('error', 'You must be logged in to continue.');
+            }
+
             $payment = new  NewPaymentController();
             $paymentSession = $payment->initiatePaymentSession();
 
@@ -105,6 +111,8 @@ class OrderController extends Controller
             ]);
         }
     }
+
+
 
 
 

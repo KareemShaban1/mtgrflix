@@ -33,7 +33,7 @@ class CurrencyMiddleware
     {
         $currency = Currency::where('code', $currencyCode)->first();
 
-        Log::info('currency' , [$currencyCode , $currency]);
+        // Log::info('currency' , [$currencyCode , $currency]);
 
         if ($currency) {
             session([
@@ -53,7 +53,7 @@ class CurrencyMiddleware
             ]);
             Log::warning("Currency code '{$currencyCode}' not found in database.");
         }
-        Log::info('session' , session()->all());
+        // Log::info('session' , session()->all());
     }
 
     private function detectCurrencyByIP()

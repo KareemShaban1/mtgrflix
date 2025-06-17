@@ -281,3 +281,41 @@
         </div>
 @endsection
 
+@section('script')
+    <script>
+        $(document).ready(function() {
+            // Order submission handling for guest users
+            const orderButton = document.getElementById('buy_now');
+            let pendingOrderSubmit = false;
+
+            if (orderButton) {
+                orderButton.addEventListener('click', function(e) {
+                    const isAuthenticated = {{ auth()->check() ? 'true' : 'false' }};
+
+                    if (!isAuthenticated) {
+                        e.preventDefault();
+                        pendingOrderSubmit = true;
+                        $('#loginModal').modal('show');
+                    }
+                });
+            }
+
+            // Listen for login success
+            document.addEventListener('userLoggedIn', function() {
+                if (pendingOrderSubmit) {
+                    pendingOrderSubmit = false;
+                    // Create a hidden input to set the action
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'action';
+                    hiddenInput.value = 'buy_now';
+                    document.getElementById('orderForm').appendChild(hiddenInput);
+                    location.reload();
+                    document.getElementById('orderForm').submit();
+                }
+            });
+
+        });
+        </script>
+        @endsection
+

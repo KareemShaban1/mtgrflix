@@ -106,7 +106,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 
-                <form method="POST" action="{{ route('verify.otp.blade') }}" id="otpForm">
+                <form method="POST" action="{{ route('send.otp') }}" id="otpForm">
                     @csrf
                     @method('POST')
                     <input type="hidden" name="phone" id="hiddenPhoneNumber" value="{{ $phone_number ?? '' }}">
