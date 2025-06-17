@@ -128,20 +128,20 @@
         var currencyCode = "{{ session('currency', 1) }}";
         var amount = "{{ $total }}";
         var language = "{{ app()->getLocale() }}";
-        console.log(countryCode , currencyCode)
         console.log(amount);
-        // countryCode: countryCode,
-        // currencyCode: currencyCode,
         var config = {
             sessionId: sessionId,
-            countryCode: 'SAU',
-            currencyCode: 'SAR',
+            countryCode: countryCode,
+            currencyCode: currencyCode,
             amount: amount,
             callback: payment,
             containerId: "unified-session",
             paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"], //"GooglePay", "ApplePay", "Card", "STCPay"
             supportedNetworks: ["visa", "masterCard", "mada", "amex"], //"visa", "masterCard", "mada", "amex"
             language: language
+
+
+
         };
 
 
@@ -151,8 +151,6 @@
         //Embedded Functions
         function payment(response) {
             //Pass session id to your backend here
-
-            console.log(response)
 
             //save order here to your backend  with all inpits values
             if (response.isSuccess) {
