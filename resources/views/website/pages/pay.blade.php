@@ -158,13 +158,13 @@
 
 const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallback
 
-        console.log(mappedCountry , currencyCode , finalAmount , sessionId)
+        console.log(countryCode , currencyCode , finalAmount , sessionId)
         const totalEl = document.querySelector('.order-total-value');
         if (totalEl) totalEl.textContent = finalAmount;
 
         const config = {
             sessionId: sessionId,
-            countryCode: mappedCountry,
+            countryCode: countryCode,
             currencyCode: currencyCode,
             amount: finalAmount,
             callback: payment,

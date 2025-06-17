@@ -20,6 +20,7 @@ class SettingController extends Controller
                 'rate' => $currency->exchange_rate,
                 'symbol' => $currency->symbol,
                 'country'  => $country->code ?? '966',
+                'flag' => $country->flag ?? 'SA'
             ]);
 
             return response()->json(['success' => true]);

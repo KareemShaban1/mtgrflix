@@ -13,6 +13,7 @@ use App\Http\Traits\Helper;
 use App\Models\ProductField;
 use Illuminate\Http\Request;
 use App\Models\OrderItemOption;
+use App\Models\Referral;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use App\Services\MyFatoorahPaymentService;
@@ -51,6 +52,9 @@ class OrderController extends Controller
         $optionIds = array_values($options);
 
         // dd($optionIds, $options);
+
+        $finalPrice = 0; // Default value in case product_id is missing
+
         if ($productId) {
 
             $product = Product::find($productId);
@@ -288,6 +292,17 @@ class OrderController extends Controller
 
             // Forget checkout session on success
             session()->forget('checkout_data');
+
+            // Track referral
+            if (Session::has('ref_id')) {
+                $refId = Session::get('ref_id');
+                $referral = Referral::where('ref_id', $refId)->first();
+
+                if ($referral) {
+                    $referral->increment('purchases_count');
+                    $referral->increment('total_sales', $order->grand_total); // Adjust to match your order field
+                }
+            }
 
             DB::commit();
 
