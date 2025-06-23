@@ -98,10 +98,10 @@
             </div>
 
 
-            <div id="unified-session" class="d-flex flex-column align-items-center justify-content-center mt-3"
+            <!-- <div id="unified-session" class="d-flex flex-column align-items-center justify-content-center mt-3"
                 style=" margin: 10px auto;">
 
-            </div>
+            </div> -->
             {{-- @if (app()->getLocale() === 'ar')
                 <img src="{{ asset('frontend') }}/assets/image/trusted-pay/ar.png" alt="" width="80"
                     height="80">
