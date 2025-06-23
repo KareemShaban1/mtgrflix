@@ -115,101 +115,94 @@
 
 @section('script')
     @if (env('APP_ENV') === 'local' || env('APP_ENV') === 'testing')
-        <script src="https://demo.myfatoorah.com/payment/v1/session.js"></script>
+        <script src="https://demo.myfatoorah.com/payment/v1/session.js"></script> {{-- Sandbox --}}
     @else
-        <script src="https://sa.myfatoorah.com/payment/v1/session.js"></script>
+        <script src="https://sa.myfatoorah.com/payment/v1/session.js"></script> {{-- Live (SAU) --}}
     @endif
 
     <script>
-        function logToServer(error) {
-    fetch("/log-client-error", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute("content"),
-        },
-        body: JSON.stringify({
-            url: window.location.href,
-            message: error.message || error.toString(),
-            stack: error.stack || null,
-            timestamp: new Date().toISOString(),
-        }),
-    }).catch(console.warn);
-}
-        const sessionId = "{{ $sessionId }}";
-        const countryCode = "{{ $countryCode }}";
-        const currencyCode = "{{ session('currency', 1) }}";
-        const rate = {{ session('rate', 1) }};
-        const originalAmount = {{ $total }};
-        const language = "{{ app()->getLocale() }}";
-        let finalAmount = (originalAmount * rate).toFixed(2).toString();
-
-        const currencyToCountry = {
-    'SAR': 'SAU',
-    'EGP': 'EGY',
-    'AED': 'ARE',
-    'QAR': 'QAT',
-    'USD': 'USA',
-    'KWD': 'KWT',
-    'JOD': 'JOR',
-    'GBP': 'GBR',
-    // add more if needed
-};
-
-const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallback
-
-        console.log(countryCode , currencyCode , finalAmount , sessionId)
         const totalEl = document.querySelector('.order-total-value');
-        if (totalEl) totalEl.textContent = finalAmount;
 
-        const config = {
+        var sessionId = "{{ $sessionId }}";
+        var countryCode = "{{ $countryCode }}";
+        var currencyCode = "{{ session('currency', 1) }}";
+        var amount = "{{ $total }}";
+        var language = "{{ app()->getLocale() }}";
+        console.log(amount);
+        var config = {
             sessionId: sessionId,
             countryCode: countryCode,
             currencyCode: currencyCode,
-            amount: finalAmount,
+            amount: amount,
             callback: payment,
             containerId: "unified-session",
-            paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"],
-            supportedNetworks: ["visa", "masterCard", "mada", "amex"],
-            language: language,
-            onError: function (err) {
-                console.error("MyFatoorah Error:", err);
-                logToServer(err);
-            }
+            paymentOptions: ["ApplePay", "GooglePay", "STCPay", "Card"], //"GooglePay", "ApplePay", "Card", "STCPay"
+            supportedNetworks: ["visa", "masterCard", "mada", "amex"], //"visa", "masterCard", "mada", "amex"
+            language: language
+
+
+
         };
 
-        myfatoorah.init(config);
 
+        myfatoorah.init(config);
+        //myfatoorah.submitStcOtp("1234");
+
+        //Embedded Functions
         function payment(response) {
+            //Pass session id to your backend here
+
+            //save order here to your backend  with all inpits values
             if (response.isSuccess) {
                 submitOrderToBackend(response.sessionId, response.paymentType);
-                console.log(`${response.paymentType} Response >>`, response);
+
+                switch (response.paymentType) {
+                    case "ApplePay":
+                        console.log("Apple Pay Response>>\n" + JSON.stringify(response));
+                        break;
+                    case "GooglePay":
+                        console.log("Google Pay response >>\n" + JSON.stringify(response));
+                        break;
+                    case "Card":
+                        console.log("Card Response >>\n" + JSON.stringify(response));
+                        break;
+                    case "StcPay":
+                        console.log("STC Pay response >>\n" + JSON.stringify(response));
+                        break;
+                    default:
+                        console.log("Unknown payment type >>\n" + JSON.stringify(response));
+                        break;
+                }
             } else {
-                console.error("Payment Error >>", response);
+                console.log("error", response);
             }
         }
 
+        function updateAmount(amount) {
+            myfatoorah.updateAmount(amount);
+        }
+
+
         function submitOrderToBackend(sessionId, paymentType) {
+
             const formData = new FormData();
             const url = '{{ route('final-checkout') }}';
 
             formData.append('session_id', sessionId);
-            formData.append('payment_type', paymentType);
 
             const cartInput = document.querySelector('input[name="cart"]');
             if (cartInput) formData.append('cart', cartInput.value);
 
-            const productIdInput = document.querySelector('input[name="product_id"]');
-            if (productIdInput) formData.append('product_id', productIdInput.value);
+            formData.append('payment_type', paymentType);
+
+            const amountElement = document.querySelector('.order-total-value');
+            if (amountElement) formData.append('amount', amountElement.textContent.trim());
 
             const couponCode = document.getElementById('coupon_code');
             if (couponCode) formData.append('code', couponCode.value.trim());
 
-            const amountElement = document.querySelector('.order-total-value');
-            if (amountElement) {
-                const amt = parseFloat(amountElement.textContent.trim());
-                formData.append('amount', amt.toFixed(2));
-            }
+            const productIdInput = document.querySelector('input[name="product_id"]');
+            if (productIdInput) formData.append('product_id', productIdInput.value);
 
             document.querySelectorAll('input[name^="product_options"]').forEach(input => {
                 if (input.name && input.value !== null) {
@@ -217,22 +210,28 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
                 }
             });
 
+
+            // 🔐 Send to backend (adjust your route)
             fetch(url, {
-                method: 'POST',
-                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
-                body: formData
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.href = data.url;
-                } else {
-                    alert('خطأ أثناء الحفظ: ' + (data.message || ''));
-                }
-            })
-            .catch(err => console.error('Error submitting order:', err));
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    },
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+
+                    if (data.success) {
+                        window.location.href = data.url;
+                    } else {
+                        alert('خطأ أثناء الحفظ: ' + (data.message || ''));
+                    }
+                })
+                .catch(err => console.error('Error submitting order:', err));
         }
     </script>
+
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -245,8 +244,9 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
             const unifiedSession = document.getElementById("unified-session");
             const removeButton = document.getElementById('removeDiscountBtn');
 
-            if (!couponCodeInput || !msgDiv || !totalEl || !loading || !btnText || !applyButton || !unifiedSession || !removeButton) {
-                console.error('Missing DOM elements.');
+            if (!couponCodeInput || !msgDiv || !totalEl || !loading || !btnText || !applyButton || !
+                unifiedSession || !removeButton) {
+                console.error('One or more required elements are missing from the DOM');
                 return;
             }
 
@@ -255,7 +255,9 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
             const initialCoupon = couponCodeInput.value.trim();
 
             if (initialCoupon) {
-                setTimeout(() => applyButton.click(), 100);
+                setTimeout(() => {
+                    applyButton.click();
+                }, 100);
             }
 
             applyButton.addEventListener('click', async function() {
@@ -283,6 +285,10 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
                         `/api/apply-coupon?code=${encodeURIComponent(couponCode)}&amount=${originalOrderAmount}`
                     );
 
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
                     const data = await response.json();
 
                     if (data.valid) {
@@ -307,15 +313,19 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
             });
 
             removeButton.addEventListener('click', function() {
+                // Reset everything
                 couponCodeInput.value = '';
                 couponCodeInput.dataset.appliedCode = '';
                 couponCodeInput.removeAttribute('readonly');
+
                 msgDiv.className = '';
                 msgDiv.innerText = '';
                 applyButton.classList.remove('d-none');
                 removeButton.classList.add('d-none');
                 resetTotal();
             });
+
+            // Helper Functions
 
             function toggleLoading(isLoading) {
                 loading.classList.toggle('d-none', !isLoading);
@@ -351,13 +361,16 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
 
                 totalEl.textContent = convertedAmount.toFixed(2);
 
-                config.amount = convertedAmount.toFixed(2).toString();
+                // ✅ Update MyFatoorah config to use discounted amount
+                config.amount = finalAmount.toFixed(2);
 
+                // ✅ Re-initialize MyFatoorah session
                 unifiedSession.innerHTML = "";
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
                     myfatoorah.init(config);
                 }
             }
+
 
             function handleInvalidCode(message) {
                 couponCodeInput.dataset.appliedCode = '';
@@ -375,9 +388,9 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
                 const convertedOriginalAmount = originalOrderAmount * rate;
                 totalEl.textContent = convertedOriginalAmount.toFixed(2);
 
-                config.amount = convertedOriginalAmount.toFixed(2).toString();
-                unifiedSession.innerHTML = "";
+                config.amount = originalOrderAmount.toFixed(2);
 
+                unifiedSession.innerHTML = "";
                 if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
                     myfatoorah.init(config);
                 }
@@ -387,4 +400,3 @@ const mappedCountry = currencyToCountry[currencyCode] || 'SAU'; // Default fallb
         });
     </script>
 @endsection
-

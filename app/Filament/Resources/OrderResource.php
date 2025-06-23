@@ -164,8 +164,6 @@ class OrderResource extends Resource
                                     ->columnSpan(3)
                                     ->disabled(fn($record) => $record !== null), // Disable for editing on update
 
-                                    
-
                                 Repeater::make('itemOptions')
                                     ->relationship()
                                     ->schema([
@@ -242,7 +240,6 @@ class OrderResource extends Resource
                     ->label(__('site.customer'))
                     ->sortable()
                     ->searchable(),
-
 
                 TextColumn::make('grand_total')
                     ->label(__('site.total_amount'))

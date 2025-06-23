@@ -376,6 +376,5 @@ return [
     'total_discount'=>'أجمالى الخصم',
     'client_count'=>'عدد العملاء',
     'export_users'=>'تصدير العملاء'
-
     
 ];

@@ -167,56 +167,6 @@
                             console.error("Error submitting both reviews:", error);
                             toastr.error("فشل إرسال التقييمات.");
                         });
-
-                    // Send the product review to the server
-                    // fetch(`/api/submit-review/${orderId}`, {
-                    //         method: 'POST',
-                    //         headers: {
-                    //             'Content-Type': 'application/json',
-                    //             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                    //                 .getAttribute('content'),
-                    //         },
-                    //         body: JSON.stringify({
-                    //             rating: rating,
-                    //             review: reviewText,
-                    //             product: productId,
-                    //         })
-                    //     })
-                    //     .then(response => response.json())
-                    //     .then(data => {
-                    //         if (data.success) {
-                    //             toastr.success('تم تقييم المنتج بنجاح');
-
-                    //             // Get the thank you modal
-                    //             const thankYouModal = new bootstrap.Modal(document
-                    //                 .querySelector('[id^="modal-thank-you"]'));
-
-                    //             // Move to next product or show store rating modal
-                    //             if (currentIndex < products.length - 1) {
-                    //                 currentIndex++;
-                    //                 showProduct(currentIndex);
-                    //                 // Clear previous rating and feedback
-                    //                 currentProduct.querySelector('textarea').value = '';
-                    //             } else {
-                    //                 // After last product, show the store rating modal
-                    //                 // const storeModalElement = document.querySelector(
-                    //                 //     '[id^="modal-rate-store"]');
-                    //                 // const storeModal = bootstrap.Modal.getOrCreateInstance(
-                    //                 //     storeModalElement);
-                    //                 // storeModal.show();
-
-                    //                 // Hide the current product modal
-                    //                 const productModal = bootstrap.Modal.getInstance(modal);
-                    //                 productModal.hide();
-
-                    //                 thankYouModal.show();
-
-                    //             }
-                    //         }
-                    //     })
-                    //     .catch(error => {
-                    //         console.error('Error submitting review:', error);
-                    //     });
                 });
             }
         }

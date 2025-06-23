@@ -40,7 +40,6 @@ class NewPaymentController extends Controller
             'Authorization' => 'Bearer ' . $api_key,
         ];
 
-
         $body = [
             "CustomerIdentifier" => auth()->user()->name,
         ];
@@ -52,7 +51,7 @@ class NewPaymentController extends Controller
         ]);
 
         $result = json_decode($response->getBody(), true);
-
+        // dd($result);
         if ($result['IsSuccess']) {
             return [
                 'sessionId' => $result['Data']['SessionId'],

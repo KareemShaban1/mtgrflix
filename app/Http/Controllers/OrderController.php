@@ -99,8 +99,7 @@ class OrderController extends Controller
 
             return view('website.pages.pay', [
                 'sessionId' => $paymentSession['sessionId'],
-                // 'countryCode' => $paymentSession['CountryCode'],
-                'countryCode' => session('country'),
+                'countryCode' => $paymentSession['CountryCode'],
                 'total' => session('checkout_data.total'),
                 'productId' => $productId,
                 'options' => $options,

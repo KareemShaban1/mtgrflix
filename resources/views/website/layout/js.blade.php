@@ -117,7 +117,6 @@
           item.addEventListener('click', function(e) {
               e.preventDefault();
               const currency = this.dataset.currency;
-              const code = this.dataset.code;
 
               fetch("{{ route('set.currency') }}", {
                       method: "POST",
@@ -126,8 +125,7 @@
                           'Content-Type': 'application/json'
                       },
                       body: JSON.stringify({
-                          currency: currency,
-                          code: code
+                          currency: currency
                       })
                   })
                   .then(response => response.json())
@@ -149,7 +147,7 @@
       @endif
   </script>
   <script>
-    $('#search-input').on('input', function () {
+      $('#search-input').on('input', function () {
         let query = $(this).val().trim();
 
         // Optional: Skip if query is too short
@@ -185,8 +183,7 @@
             }
         });
     });
-</script>
-
+  </script>
 
   <script>
       // modal mobile
@@ -485,6 +482,7 @@
           });
       });
   </script>
+
 
 
 

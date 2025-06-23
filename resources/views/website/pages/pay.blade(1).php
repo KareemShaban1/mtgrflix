@@ -326,7 +326,7 @@
                 msgDiv.innerText = '';
                 applyButton.classList.remove('d-none');
                 removeButton.classList.add('d-none');
-                resetTotal(true);
+                resetTotal();
             });
 
             // Helper Functions
@@ -379,28 +379,28 @@
             function handleInvalidCode(message) {
                 couponCodeInput.dataset.appliedCode = '';
                 showError(message || 'كود غير صالح!');
-                resetTotal(false);
+                resetTotal();
             }
 
             function handleFetchError(error) {
                 console.error('Coupon fetch error:', error);
                 showError('حدث خطأ أثناء الاتصال بالخادم');
-                resetTotal(false);
+                resetTotal();
             }
 
-            function resetTotal(reinit = true) {
-    const convertedOriginalAmount = originalOrderAmount * rate;
-    totalEl.textContent = convertedOriginalAmount.toFixed(2);
+            function resetTotal() {
+                const convertedOriginalAmount = originalOrderAmount * rate;
+                totalEl.textContent = convertedOriginalAmount.toFixed(2);
 
-    config.amount = originalOrderAmount.toFixed(2);
+                config.amount = originalOrderAmount.toFixed(2);
 
-    $('#discount-amount').val('');
+                unifiedSession.innerHTML = "";
+                if (typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
+                    myfatoorah.init(config);
+                }
 
-    if (reinit && typeof myfatoorah !== 'undefined' && typeof myfatoorah.init === 'function') {
-        unifiedSession.innerHTML = "";
-        myfatoorah.init(config);
-    }
-}
+                $('#discount-amount').val('');
+            }
         });
     </script>
 @endsection

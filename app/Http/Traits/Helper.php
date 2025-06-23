@@ -115,7 +115,7 @@ trait Helper
         ];
 
         try {
-            $response = Http::timeout(30)
+            $response = Http::timeout(10)
                 ->acceptJson()
                 ->post('https://www.nerachat.com/api/create-message', $payload);
 

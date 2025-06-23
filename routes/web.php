@@ -34,7 +34,6 @@ use App\Http\Controllers\NewPaymentController;
 use App\Http\Controllers\GoogleServiceController;
 use App\Http\Controllers\DigitalContentController;
 use Google\Service\Calendar\Setting;
-use Illuminate\Support\Facades\Log;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 use PHPUnit\Event\Code\Test;
 
@@ -48,11 +47,6 @@ use PHPUnit\Event\Code\Test;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
-
-Route::post('/log-client-error', function (\Illuminate\Http\Request $request) {
-    Log::channel('client')->error('Client Error', $request->all());
-    return response()->json(['status' => 'logged']);
-});
 
 Route::middleware(config('shrinkr.middleware'))
     ->get('/{shortenedUrl}', config('shrinkr.controller'))
@@ -155,7 +149,8 @@ Route::prefix('api')->group(function () {
 });
 
 
-
+Route::get('/product_reviews/{id}', [ProfileController::class, 'product_review'])
+->name('productReviews');
 //test
 Route::get('/my-orders/payment', [NewPaymentController::class, 'initiatePaymentSession'])->name('order.review');
 Route::get('/website-test/test', [TestContoller::class, 'test'])->name('test');

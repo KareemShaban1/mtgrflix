@@ -109,10 +109,6 @@ class CouponResource extends Resource
                     ->label(__('site.valid_until'))
                     ->date(),
 
-                // Tables\Columns\TextColumn::make('uses_count')
-                //     ->label(__('site.uses_count'))
-                //     // ->counts('orders')
-                //     ,
                 Tables\Columns\TextColumn::make('uses_count')
                     ->label(__('site.uses_count')),
 
@@ -155,10 +151,11 @@ class CouponResource extends Resource
     }
     public static function getEloquentQuery(): Builder
     {
-        if (request()->routeIs('filament.admin.resources.coupons.index')) {
+         if (request()->routeIs('filament.admin.resources.coupons.index')) {
             return parent::getEloquentQuery()
+                ->has('orders')
                 // ->doesntHave('cart')
-                ->doesntHave('testimonial')
+                // ->doesntHave('testimonial')
                 // ->whereNull('max_uses')
                 ->latest();
         }

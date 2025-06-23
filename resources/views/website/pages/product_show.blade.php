@@ -317,5 +317,44 @@
 
         });
         </script>
+         <script>
+    var productId = {{ $product->id }};
+    var ENDPOINT = "{{ route('productReviews', ':id') }}".replace(':id', productId);
+    var page = 1;
+
+    $(document).on('click', '.load-more-data', function () {
+        page++;
+        loadMoreReviews(page);
+    });
+
+    function loadMoreReviews(page) {
+        $.ajax({
+            url: ENDPOINT + "?page=" + page,
+            type: "GET",
+            beforeSend: function () {
+                $('.auto-load').show();
+                $('.load-more-data').prop('disabled', true);
+            }
+        })
+        .done(function (response) {
+            $('.auto-load').hide();
+            $('.load-more-data').prop('disabled', false);
+
+            if (response.html) {
+                $("#data-wrapper").append(response.html);
+            }
+
+            if (!response.html || $.trim(response.html) === "") {
+                $('.load-more-data').hide();
+            }
+        })
+        .fail(function () {
+            console.log('Server error occurred');
+            $('.auto-load').hide();
+            $('.load-more-data').prop('disabled', false);
+        });
+    }
+</script>
+
         @endsection
 

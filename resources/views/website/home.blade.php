@@ -8,9 +8,9 @@
     @include('website.layout.slider')
     <!--end slider section-->
     @foreach ($main_categories as $category)
-    <section class="mb-4 pt-4">
+        <section class="mb-4 pt-4">
             <div class=" container">
-                <!-- https://wa.me/966551200896 -->
+                                <!-- https://wa.me/966551200896 -->
                 <a  @if ($category->link) href="{{ $category->link }}" @endif>
                     <img src="{{ asset('storage/' . $category->image) }}" class="img-fluid" alt="...">
                 </a>

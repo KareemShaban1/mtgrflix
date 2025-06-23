@@ -20,7 +20,7 @@ class SettingController extends Controller
                 'rate' => $currency->exchange_rate,
                 'symbol' => $currency->symbol,
                 'country'  => $country->code ?? '966',
-                'flag' => $country->flag ?? 'SA'
+                'flag' => $country->flag ?? 'SA',
             ]);
 
             return response()->json(['success' => true]);
@@ -28,26 +28,6 @@ class SettingController extends Controller
 
         return response()->json(['success' => false], 400);
     }
-
-    // public function setCurrency(Request $request)
-    // {
-    //     session()->forget('currency'); // Clear old one if needed
-
-    //     $currencyCode = $request->input('currency');
-    //     $currency = Currency::where('code', $currencyCode)->first();
-
-    //     if ($currency) {
-    //         session([
-    //             'currency' => $currency->code,
-    //             'rate'     => $currency->exchange_rate,
-    //             'symbol'   => $currency->symbol,
-    //         ]);
-
-    //         return response()->json(['success' => true]);
-    //     }
-
-    //     return response()->json(['success' => false, 'message' => 'Currency not found'], 404);
-    // }
 
     public function callback2()
     {
@@ -74,7 +54,7 @@ class SettingController extends Controller
             Log::info('Salla response:', $data);            // find the first record or create a new one
 
 
-
+         
             return true;
         }
 
@@ -111,7 +91,7 @@ class SettingController extends Controller
             case 'order.updated':
                 $this->handleOrderUpdated($payload);
                 break;
-
+          
             case 'app.store.authorize':
                 $this->handleAppStoreAuthorize($payload);
                 break;

@@ -87,8 +87,8 @@ class AdvertisementResource extends Resource
                 ]),
             ])
             ->recordUrl(
-                fn(Advertisement $record): string => static::getUrl('edit', ['record' => $record]),
-            );
+            fn (Advertisement $record): string => static::getUrl('edit', ['record' => $record]),
+        );
     }
 
     public static function getRelations(): array
